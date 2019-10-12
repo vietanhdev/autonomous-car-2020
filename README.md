@@ -6,16 +6,16 @@
 
 ## II. Environment Setup
 
-1. Ubuntu 18.04
+### 1. Ubuntu 18.04
 
-2. Robot Operating System
+### 2. Robot Operating System
   
 - Install ROS Melodic:
   http://wiki.ros.org/melodic/Installation/Ubuntu
 
 - Using full desktop version.
   
-3. Initialize Catkin workspace
+### 3. Initialize Catkin workspace
 
 We need to initialize catkin workspace at the first time (build folders for projects).
 
@@ -31,7 +31,7 @@ echo "source !(pwd)/main_ws/devel/setup.bash" >> ~/.bashrc
 source ~/.bashrc
 ```
   
-4. Dependencies: 
+#### 4. Dependencies: 
 
 - rosbridge-suite
 
