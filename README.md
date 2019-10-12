@@ -31,7 +31,7 @@ echo "source !(pwd)/main_ws/devel/setup.bash" >> ~/.bashrc
 source ~/.bashrc
 ```
   
-#### 4. Dependencies: 
+### 4. Dependencies: 
 
 - rosbridge-suite
 
