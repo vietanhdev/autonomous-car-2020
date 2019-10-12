@@ -27,14 +27,14 @@ catkin_make
 Add workspace to PATH:
 
 ```terminal
-
+echo "source !(pwd)/main_ws/devel/setup.bash" >> ~/.bashrc
+source ~/.bashrc
 ```
-
-
-  `$ echo "source ~/catkin_ws/devel/setup.bash" >> ~/.bashrc`
-
-  `$ source ~/.bashrc`
   
-4. Cài đặt rosbridge-suite
+4. Dependencies: 
 
-`$ sudo apt-get install ros-melodic-rosbridge-server`
+- rosbridge-suite
+
+```terminal
+sudo apt-get install ros-melodic-rosbridge-server
+```
