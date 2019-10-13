@@ -128,3 +128,19 @@ debug_stream.update_image('depth', depth_image)
 ```
 rosrun rqt_image_view rqt_image_view
 ```
+
+
+### Record video
+
+### Step 1: Record images
+
+```
+rosrun image_view image_saver image:=/teamict/camera/depth _image_transport:=compressed
+rosrun image_view image_saver image:=/teamict/camera/rgb _image_transport:=compressed
+```
+
+### Step 2: Convert to videos
+
+```
+ffmpeg -framerate 25 -i left%04d.jpg -c:v libx264 -profile:v high -crf 20 -pix_fmt yuv420p 01_rgb.mp4
+```
