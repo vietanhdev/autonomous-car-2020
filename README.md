@@ -8,14 +8,20 @@
 
 ### 1. Ubuntu 18.04
 
-### 2. Robot Operating System
+### 2. Miniconda or Anaconda
+
+### 3. OpenCV 3.4.3
+
+- Install OpenCV 3.4.3 using this script: <scripts/install_opencv_3.sh>
+
+### 4. Robot Operating System
   
 - Install ROS Melodic:
   http://wiki.ros.org/melodic/Installation/Ubuntu
 
 - Using full desktop version.
   
-### 3. Initialize Catkin workspace
+### 5. Initialize Catkin workspace
 
 We need to initialize catkin workspace at the first time (build folders for projects).
 
@@ -30,11 +36,24 @@ Add workspace to PATH:
 echo "source !(pwd)/main_ws/devel/setup.bash" >> ~/.bashrc
 source ~/.bashrc
 ```
+
+### 6. Create Conda environment 
+
+```terminal
+cd main_ws
+conda env create -n cds -f environment.yml 
+conda activate cds
+```
   
-### 4. Dependencies: 
+### 7. Dependencies: 
 
 - rosbridge-suite
 
 ```terminal
 sudo apt-get install ros-melodic-rosbridge-server
 ```
+
+
+### Other stuffs
+
+https://medium.com/@zuxinl/ubuntu-18-04-ros-python3-anaconda-cuda-environment-configuration-cb8c8e42c68d
