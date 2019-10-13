@@ -1,0 +1,3 @@
+<launch>
+	<node name="teamict" pkg="teamict" type="teamict_node.py" output="screen" args="_image_transport:=compressed" />
+</launch>

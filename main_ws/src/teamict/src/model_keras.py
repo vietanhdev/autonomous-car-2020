@@ -1,14 +1,13 @@
 # Initial Setup for Keras
-from keras.models import Sequential
-from keras.layers import Dense, Activation, Flatten, Dropout, Lambda
-from keras.layers import Conv2D, MaxPooling2D, BatchNormalization
-from keras.preprocessing.image import ImageDataGenerator
-from keras.optimizers import Adam
-
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense, Activation, Flatten, Dropout, Lambda
+from tensorflow.keras.layers import Conv2D, MaxPooling2D, BatchNormalization
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.optimizers import Adam
+import tensorflow as tf
 
 def resize(img):
-    from keras.backend import tf as ktf
-    return ktf.image.resize_images(img, [100, 200])
+    return tf.image.resize_images(img, [100, 200])
 
 
 def nvidia_model():

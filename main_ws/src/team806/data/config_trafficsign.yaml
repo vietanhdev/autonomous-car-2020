@@ -1,0 +1,23 @@
+tsd_version: "super versioeps_diffn _ An"
+traffic_sign_detector_svmfile: "/data/svm_an_linear.xml"
+
+low_HSV: "90 110 110"
+high_HSV: "104 255 255"
+
+crop_size: 32
+eps_diff: 0.5
+
+# For filtering contours with area
+min_area_contour: 10.0
+max_area_contour: 2000.0
+
+# For filtering bouding rects, compare high with min/max_accepted_size, ratio = high/width
+min_accepted_size: 10.0
+max_accepted_size: 50.0
+min_accepted_ratio: 0.9
+max_accepted_ratio: 1.5
+
+# Number of labeled bouding rects in previous frames is stored in 'record'
+# If there are enough similarity labeled bouding rects in 'record', we can label the current rects as them
+min_prev_check: 5
+min_prob: 0.5

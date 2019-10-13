@@ -12,14 +12,11 @@
 
 ### 3. OpenCV 3.4.3
 
-- Install OpenCV 3.4.3 using this script: <scripts/install_opencv_3.sh>
+- You can use following script to install OpenCV 3.4.3: <scripts/install_opencv_3.sh>
 
 ### 4. Robot Operating System
   
-- Install ROS Melodic:
-  http://wiki.ros.org/melodic/Installation/Ubuntu
-
-- Using full desktop version.
+- Install ROS Melodic - full desktop version: <http://wiki.ros.org/melodic/Installation/Ubuntu>
   
 ### 5. Initialize Catkin workspace
 
@@ -52,7 +49,6 @@ conda activate cds
 ```terminal
 sudo apt-get install ros-melodic-rosbridge-server
 ```
-
 
 ### Other stuffs
 

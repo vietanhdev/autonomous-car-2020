@@ -8,25 +8,20 @@ import rospy
 from detect_parking import DetectParking 
 from model_keras import nvidia_model
 from std_msgs.msg import Float32, String, Bool
-
-path = rospkg.RosPack().get_path('team105')
-import keras
+import config
+path = rospkg.RosPack().get_path(config.TEAM_NAME)
+import tensorflow.keras
 
 import time
 import tensorflow as tf
 
 print(tf.__version__)
-print(keras.__version__)
-from keras.backend.tensorflow_backend import set_session
 
-config = tf.ConfigProto()
-config.gpu_options.per_process_gpu_memory_fraction = 0.2
-set_session(tf.Session(config=config))
 
 
 class CarControl:
     def __init__(self, param):
-        rospy.init_node('team105', anonymous=True)
+        rospy.init_node('teamict', anonymous=True)
         self.speed_pub = rospy.Publisher("/set_speed_car_api", Float32, queue_size=1)
         self.steerAngle_pub = rospy.Publisher("/set_steer_car_api", Float32, queue_size=1)
 
@@ -39,23 +34,23 @@ class CarControl:
         self.current_speed = 0
 
         # Load keras model
-        self.model = nvidia_model()
-        self.model.load_weights(path + '/param/test_2305-weights.08-0.01877.h5')
-        self.model._make_predict_function()
-        self.dp = DetectParking()
-        self.h, self.w = 240, 320
-        self.carPos = (160, 240)
-        self.last_detected = 0
-        self.sign_type = 0
-        self.is_turning = False
-        self.time_detected = 0
+        # self.model = nvidia_model()
+        # self.model.load_weights(path + '/param/test_2305-weights.08-0.01877.h5')
+        # self.model._make_predict_function()
+        # self.dp = DetectParking()
+        # self.h, self.w = 240, 320
+        # self.carPos = (160, 240)
+        # self.last_detected = 0
+        # self.sign_type = 0
+        # self.is_turning = False
+        # self.time_detected = 0
 
-        self.fps = 0
-        self.fps_timer = time.time()
+        # self.fps = 0
+        # self.fps_timer = time.time()
 
-        self.cover_left = np.array([[0, 0], [200, 0], [100, 240]])
-        self.cover_right = np.array([[120, 0], [320, 0], [220, 240]])
-        self.triangle_cnt = np.array([[0, 0]])
+        # self.cover_left = np.array([[0, 0], [200, 0], [100, 240]])
+        # self.cover_right = np.array([[120, 0], [320, 0], [220, 240]])
+        # self.triangle_cnt = np.array([[0, 0]])
 
     def control(self, img, car_pose, sign, is_go, danger_zone, slow_down):
         steer_angle = self.cal_steer_angle(img, car_pose, sign, danger_zone)

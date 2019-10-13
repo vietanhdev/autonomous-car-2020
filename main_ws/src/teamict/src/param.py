@@ -1,5 +1,4 @@
 import numpy as np
-from localization import CheckPoint, Position
 
 class Param:
     def __init__(self):
@@ -18,15 +17,3 @@ class Param:
         self.speed_slow_down = 1
 
         self.delay_time = 1
-
-        # set up check-points
-        self.checkpoint1 = CheckPoint("1", Position(2, -36, 116))
-        self.checkpoint2 = CheckPoint("2", Position(-36, -126, 838))
-        self.checkpoint3 = CheckPoint("3", Position(418, -163, 1100))
-
-
-        # add neighbors check-points
-        self.checkpoint1.add_neighbors(self.checkpoint2)
-        self.checkpoint2.add_neighbors(self.checkpoint1, self.checkpoint3)
-        self.checkpoint3.add_neighbors(self.checkpoint2)
-
