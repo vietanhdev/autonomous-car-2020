@@ -135,12 +135,27 @@ rosrun rqt_image_view rqt_image_view
 ### Step 1: Record images
 
 ```
-rosrun image_view image_saver image:=/teamict/camera/depth _image_transport:=compressed
+mkdir video_rgb
+cd video_rgb
 rosrun image_view image_saver image:=/teamict/camera/rgb _image_transport:=compressed
+```
+
+```
+mkdir video_depth
+cd video_depth
+rosrun image_view image_saver image:=/teamict/camera/depth _image_transport:=compressed
 ```
 
 ### Step 2: Convert to videos
 
+In `video_rgb`:
+
 ```
 ffmpeg -framerate 25 -i left%04d.jpg -c:v libx264 -profile:v high -crf 20 -pix_fmt yuv420p 01_rgb.mp4
+```
+
+In `video_depth`:
+
+```
+ffmpeg -framerate 25 -i left%04d.jpg -c:v libx264 -profile:v high -crf 20 -pix_fmt yuv420p 01_depth.mp4
 ```
