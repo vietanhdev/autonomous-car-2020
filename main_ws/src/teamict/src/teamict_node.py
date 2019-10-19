@@ -13,9 +13,11 @@ if __name__ == '__main__':
     rospy.init_node(config.TEAM_NAME, anonymous=True)
     cv_bridge = CvBridge()
 
-    debug_stream = DebugStream(cv_bridge)
-    debug_stream.start()
-    # debug_stream = None
+    if config.DEVELOPMENT:
+        debug_stream = DebugStream(cv_bridge)
+        debug_stream.start()
+    else:
+        debug_stream = None
 
     image_processor = ImageProcessor(cv_bridge, debug_stream)
 
