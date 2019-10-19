@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*- 
 
 # Set this value to True will active all debug stream. Otherwise, set it to False.
-DEVELOPMENT = False
+DEVELOPMENT = True
 
 TEAM_NAME = 'teamict'
 PACKAGE_NAME = 'teamict'
