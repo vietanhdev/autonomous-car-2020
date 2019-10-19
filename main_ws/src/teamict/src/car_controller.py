@@ -13,7 +13,7 @@ from param import Param
 
 class CarController:
 
-    def __init__(self, lane_detector):
+    def __init__(self, lane_detector, debug_stream=None):
         rospy.init_node(config.TEAM_NAME, anonymous=True)
         self.speed_pub = rospy.Publisher(config.TOPIC_SET_SPEED, Float32, queue_size=1)
         self.steer_angle_pub = rospy.Publisher(config.TOPIC_SET_ANGLE, Float32, queue_size=1)
@@ -22,7 +22,11 @@ class CarController:
         self.current_speed = 40
         self.is_turning = 0
         self.h, self.w = 240, 320
-        rospy.Rate(10)
+        self.debug_stream = debug_stream
+        
+        # Initialize debug stream
+        if self.debug_stream:
+            self.debug_stream.create_stream('depth_processing', 'debug/depth_processing')
 
     def control(self, img, sign, is_go, danger_zone, slow_down):
 

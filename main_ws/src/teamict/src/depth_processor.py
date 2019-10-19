@@ -6,14 +6,16 @@ import rospy
 
 class DepthProcessor:
 
-    def __init__(self):
+    def __init__(self, debug_stream=None):
         self.MAX_UINT8 = 255
         self.counter = 0
-        rospy.Rate(10)
         self.area_130 = 130
         self.area_100 = 110
-        print(cv2.__version__)
-        # self.path = rospkg.RosPack.get_path('team105_detectsign')
+        self.debug_stream = debug_stream
+
+        # Initialize debug stream
+        if self.debug_stream:
+            self.debug_stream.create_stream('depth_processing', 'debug/depth_processing')
 
     def ground(self, gray_img, x, y, n, T1, T2):
         if gray_img[y][x] > T1 or gray_img[y][x] < T2:
@@ -170,7 +172,7 @@ class DepthProcessor:
 
         danger_zone = self.find_danger_zone(obstacle_left, obstacle_right)
 
-        cv2.imshow('Obstacle detection', img_RGB_np)
-        cv2.waitKey(1)
+        if self.debug_stream:
+            self.debug_stream.update_image('depth_processing', img_RGB_np)
 
         return danger_zone

@@ -64,10 +64,10 @@ class ImageProcessor:
         self.lane_detector = LaneDetector(lane_config, lane_model, debug_stream=debug_stream)
 
         # Depth processor
-        self.depth_processor = DepthProcessor()
+        self.depth_processor = DepthProcessor(debug_stream=debug_stream)
 
         # Car controlling
-        self.car_controller = CarController(self.lane_detector)
+        self.car_controller = CarController(self.lane_detector, debug_stream=debug_stream)
 
         # Setup pub/sub
         # WTF BUG!!! https://answers.ros.org/question/220502/image-subscriber-lag-despite-queue-1/
