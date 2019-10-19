@@ -53,7 +53,7 @@ class DebugStream(threading.Thread):
 
     def run(self):
         while not rospy.is_shutdown():
-            time.sleep(0.1)
+            rospy.Rate(1).sleep()
             for (stream_name, stream) in self.image_streams.items():
                 stream.publish(self.image_bridge)
 
