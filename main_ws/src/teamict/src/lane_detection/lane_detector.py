@@ -45,6 +45,7 @@ class LaneDetector():
         # Initialize debug stream
         if self.debug_stream:
             self.debug_stream.create_stream('road_seg', 'debug/road_segmentation')
+            self.debug_stream.create_stream('road_seg_birdview', 'debug/road_segmentation_birdview')
             
 
 
@@ -109,12 +110,13 @@ class LaneDetector():
         road_mask = np.zeros((self.input_size[1], self.input_size[0]), np.uint8)
         road_mask[pred_1 >= self.config["road_threshold"]] = 255
 
-        road_mask = self.bird_view(road_mask)
+        road_mask_birdview = self.bird_view(road_mask)
 
         if self.debug_stream:
             self.debug_stream.update_image('road_seg', road_mask)
+            self.debug_stream.update_image('road_seg_birdview', road_mask_birdview)
 
-        return road_mask
+        return road_mask_birdview
 
 
     
