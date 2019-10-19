@@ -23,6 +23,5 @@ if __name__ == '__main__':
         rospy.spin()
     except KeyboardInterrupt:
         print("Shutting down")
-        # cv2.destroyAllWindows()
 
 

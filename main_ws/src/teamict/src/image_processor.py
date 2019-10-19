@@ -39,12 +39,6 @@ class ImageProcessor:
         self.cv_bridge = cv_bridge
         self.debug_stream = debug_stream
 
-        self.sd_counter = 0
-        self.cc_counter = 0
-        self.dc_counter = 0
-        self.bt_counter = 0
-        self.st_counter = 0
-
         self.is_turning = False
 
         self.is_go = True
@@ -90,7 +84,6 @@ class ImageProcessor:
     
             self.danger_zone = self.depth_processor.pre_processing_depth_img(image_np)
 
-            # print(self.danger_zone)
         except CvBridgeError as e:
             print(e)
 
@@ -107,8 +100,6 @@ class ImageProcessor:
             # NOTE: image_np.shape = (240, 320, 3)
             image_np = cv2.resize(image_np, (320, 240))
 
-            # Put frame into rgb queue
-            # self.rgb_frames.put(image_np)
 
             self.slow_down = True
             self.is_turning, steer_angle, speed = self.car_controller.control(image_np, self.sign, self.is_go, self.danger_zone, self.slow_down)
@@ -118,26 +109,3 @@ class ImageProcessor:
 
         except CvBridgeError as e:
             print(e)
-
-
-    # def callback_depth_image(self, data):
-    #     '''
-    #     Function to process depth images
-    #     '''
-    #     global depth_image, depth_image_mutex
-    #     try:
-    #         np_arr = np.fromstring(data.data, np.uint8)
-    #         image_np = cv2.imdecode(np_arr, cv2.IMREAD_GRAYSCALE)
-
-    #         # NOTE: image_np.shape = (240, 320, 3)
-    #         image_np = cv2.resize(image_np, (320, 240))
-
-    #         # Put frame into depth queue
-    #         # self.depth_frames.put(image_np)
-    #         self.depth_processor.pre_processing_depth_img(image_np)
-
-    #         if self.debug_stream:
-    #             self.debug_stream.update_image('depth', image_np)
-
-    #     except CvBridgeError as e:
-    #         print(e)
