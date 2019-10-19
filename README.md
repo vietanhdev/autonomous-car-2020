@@ -1,5 +1,9 @@
 # RaceCar 2019-2020 - Team: ICT K60
 
+## BUGS:
+
+- https://answers.ros.org/question/220502/image-subscriber-lag-despite-queue-1/
+
 ## I. Project Info:
 
 - Team name: teamict

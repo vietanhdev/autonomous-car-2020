@@ -14,14 +14,13 @@ for gpu in tf.config.experimental.list_physical_devices('GPU'):
 import numpy as np
 import argparse
 import json
-import threading
 import time
 import rospy
 import rospkg
 
-class LaneDetector(threading.Thread):
+class LaneDetector():
 
-    def __init__(self, config_path, model_path, image_queue, debug_stream=None):
+    def __init__(self, config_path, model_path, debug_stream=None):
         """
         Lane Detector
             @:param: config_path: path to configuration file
@@ -31,7 +30,6 @@ class LaneDetector(threading.Thread):
         """
 
         self.debug_stream = debug_stream
-        self.image_queue = image_queue
 
         self.count = 0
 
@@ -48,15 +46,42 @@ class LaneDetector(threading.Thread):
         if self.debug_stream:
             self.debug_stream.create_stream('road_seg', 'debug/road_segmentation')
             
-        threading.Thread.__init__(self)
 
-    def run(self):
-        while not rospy.is_shutdown():
-            if not self.image_queue.empty():
-                self.get_road_mask(self.image_queue.get())
 
-                print(self.count)
-                self.count += 1
+    def unwarp(self, img, src, dst):
+        h, w = img.shape[:2]
+        M = cv2.getPerspectiveTransform(src, dst)
+
+        unwarped = cv2.warpPerspective(img, M, (w, h), flags=cv2.INTER_LINEAR)
+        return unwarped
+
+    def bird_view(self, source_img):
+        h, w = source_img.shape[:2]
+        # define source and destination points for transform
+
+        src = np.float32([(100, 120),
+                          (220, 120),
+                          (0, 210),
+                          (320, 210)])
+
+        dst = np.float32([(120, 0),
+                          (w - 120, 0),
+                          (120, h),
+                          (w - 120, h)])
+
+        src_bridge = np.float32([(50, 180),
+                          (270, 180),
+                          (0, 210),
+                          (320, 210)])
+
+        dst_bridge = np.float32([(80, 0),
+                          (w - 80, 0),
+                          (80, h),
+                          (w - 80, h)])
+
+        # change perspective to bird's view
+        unwarped = self.unwarp(source_img, src, dst)
+        return unwarped
 
     def get_road_mask(self, img):
         """
@@ -83,6 +108,8 @@ class LaneDetector(threading.Thread):
         # Post processing
         road_mask = np.zeros((self.input_size[1], self.input_size[0]), np.uint8)
         road_mask[pred_1 >= self.config["road_threshold"]] = 255
+
+        road_mask = self.bird_view(road_mask)
 
         if self.debug_stream:
             self.debug_stream.update_image('road_seg', road_mask)
