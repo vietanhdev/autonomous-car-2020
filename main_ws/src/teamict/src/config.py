@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*- 
 
 TEAM_NAME = 'teamict'
+PACKAGE_NAME = 'teamict'
 
 # /tênđội/set_speed: Topic được publish từ ROS_node được định nghĩa dưới dạng số thực (Float32). Là tốc độ xe cần đạt. ( Mặc định đang để là /team1/set_speed, nếu nhập tên đội khác, cần sửa lại topic trong code /lane_detect/src/main.cpp theo tên đội đã nhập ở app)
 TOPIC_SET_SPEED = '/{}/set_speed'.format(TEAM_NAME)

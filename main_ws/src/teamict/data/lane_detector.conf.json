@@ -1,0 +1,8 @@
+{
+    "model" : {
+	"model_type":			"UNet",
+        "im_width":                     320,
+        "im_height":                    240
+    },
+    "road_threshold": 0.7
+}

@@ -2,6 +2,7 @@ import threading
 from sensor_msgs.msg import CompressedImage, Image
 import rospy
 import time
+from cv_bridge import CvBridge, CvBridgeError
 
 class ImageStream():
     '''
@@ -31,7 +32,10 @@ class ImageStream():
     def publish(self, bridge):
         if self.image is not None:
             try:
-                self.publisher.publish(bridge.cv2_to_imgmsg(self.get_image(), "bgr8"))
+                if len(self.image.shape) == 2:
+                    self.publisher.publish(bridge.cv2_to_imgmsg(self.get_image(), "mono8"))
+                else:
+                    self.publisher.publish(bridge.cv2_to_imgmsg(self.get_image(), "bgr8"))
             except CvBridgeError as e:
                 print(e)
 
@@ -49,7 +53,7 @@ class DebugStream(threading.Thread):
 
     def run(self):
         while not rospy.is_shutdown():
-            time.sleep(0.1)
+            time.sleep(0.5)
             for (stream_name, stream) in self.image_streams.items():
                 stream.publish(self.image_bridge)
 

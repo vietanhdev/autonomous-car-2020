@@ -114,3 +114,6 @@ main_ws/build
 main_ws/devel
 main_ws/catkin_workspace
 main_ws/logfile*
+
+
+main_ws/src/team806

@@ -6,7 +6,7 @@ import roslib
 import rospy
 from cv_bridge import CvBridge, CvBridgeError
 from debug_stream import DebugStream
-from image_processor import ImageProcessor 
+from image_processor import ImageProcessor
 
 if __name__ == '__main__':
 
@@ -15,13 +15,13 @@ if __name__ == '__main__':
 
     debug_stream = DebugStream(cv_bridge)
     debug_stream.start()
+    # debug_stream = None
 
     image_processor = ImageProcessor(cv_bridge, debug_stream)
 
     try:
         rospy.spin()
     except KeyboardInterrupt:
-        stop_threads = True
         print("Shutting down")
         # cv2.destroyAllWindows()
 
