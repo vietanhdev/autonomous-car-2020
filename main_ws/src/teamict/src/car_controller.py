@@ -19,7 +19,7 @@ class CarController:
         self.steer_angle_pub = rospy.Publisher(config.TOPIC_SET_ANGLE, Float32, queue_size=1)
         self.param = Param()
         self.lane_detector = lane_detector
-        self.current_speed = 60
+        self.current_speed = 40
         self.is_turning = 0
         self.h, self.w = 240, 320
         rospy.Rate(10)
@@ -63,24 +63,26 @@ class CarController:
             middle_pos = 0
 
 
-        # avoid obstacles
-        # if danger_zone != (0, 0):
-        #     # 2 objects
-        #     if danger_zone[0] == -1:
-        #         middle_pos = danger_zone[1]
-        #     # single object
-        #     else:
-        #         center_danger_zone = int((danger_zone[0] + danger_zone[1]) / 2)
-        #         # print(danger_zone, center_danger_zone)
-        #         if danger_zone[0] + 20 < middle_pos < danger_zone[1] - 20:
-        #             # obstacle's on the right
-        #             if (middle_pos - 160) * 1 + 160 < center_danger_zone:
-        #                 print("on the right")
-        #                 middle_pos = danger_zone[0]
-        #             # left
-        #             else:
-        #                 print("on the left")
-        #                 middle_pos = danger_zone[1]
+        # Avoid obstacles
+        if danger_zone != (0, 0):
+
+            # 2 objects
+            if danger_zone[0] == -1:
+                middle_pos = danger_zone[1]
+
+            # single object
+            else:
+                center_danger_zone = int((danger_zone[0] + danger_zone[1]) / 2)
+                # print(danger_zone, center_danger_zone)
+                if danger_zone[0] + 20 < middle_pos < danger_zone[1] - 20:
+                    # obstacle's on the right
+                    if (middle_pos - 160) * 1 + 160 < center_danger_zone:
+                        print("on the right")
+                        middle_pos = danger_zone[0]
+                    # left
+                    else:
+                        print("on the left")
+                        middle_pos = danger_zone[1]
 
         if middle_pos > 640:
             middle_pos = 640
@@ -98,7 +100,7 @@ class CarController:
 
         # Angle to middle position
         steer_angle = math.atan(float(distance_x) / distance_y) * 180 / math.pi
-        cv2.waitKey(1)
+        # cv2.waitKey(1)
 
         # QIK MATH
         # steer_angle = ((middle_pos - 160) / 160) * 60

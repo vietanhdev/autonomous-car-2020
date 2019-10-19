@@ -78,7 +78,7 @@ class DepthProcessor:
                 danger_zone = (x - self.area_130, x + w + self.area_130)
         return danger_zone
 
-    def pre_processing_depth_img(self, img_np, n=2, T1=160, T2=10, min_width=35, min_height=35):
+    def pre_processing_depth_img(self, img_np, n=2, T1=150, T2=10, min_width=35, min_height=35):
 
         # Resize
         gray_img = self.resize_np(img_np, 0.125)
@@ -123,7 +123,6 @@ class DepthProcessor:
 
         # resize
         gray_img = self.resize_np(gray_img, 8)
-        # cv2.imwrite("/img_depth/img_processed/processed_"+str(self.counter)+".jpg", gray_img)
         # cv2.imshow('preprocessed', gray_img)
 
         # ret, thresh = cv2.threshold(gray_img, 10, 200, cv2.THRESH_BINARY)
@@ -171,7 +170,7 @@ class DepthProcessor:
 
         danger_zone = self.find_danger_zone(obstacle_left, obstacle_right)
 
-        # cv2.imshow('contours', img_RGB_np)
-        # cv2.waitKey(1)
+        cv2.imshow('Obstacle detection', img_RGB_np)
+        cv2.waitKey(1)
 
         return danger_zone
