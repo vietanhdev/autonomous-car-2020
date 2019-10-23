@@ -5,67 +5,148 @@ import math
 import numpy as np
 import rospkg
 import rospy
-from std_msgs.msg import Float32, String, Bool
+from std_msgs.msg import Float32, String, Bool, Int32
 import config
-path = rospkg.RosPack().get_path(config.TEAM_NAME)
 import time
-from param import Param
+from semantic_segmentation.traffic_objects import TrafficObject, OBJECT_COLORS
+from obstacle_detection.obstacle_detector import ObstacleDetector
 
 class CarController:
 
-    def __init__(self, lane_detector, debug_stream=None):
+    def __init__(self, segmentation, debug_stream=None):
+
         rospy.init_node(config.TEAM_NAME, anonymous=True)
         self.speed_pub = rospy.Publisher(config.TOPIC_SET_SPEED, Float32, queue_size=1)
         self.steer_angle_pub = rospy.Publisher(config.TOPIC_SET_ANGLE, Float32, queue_size=1)
-        self.param = Param()
-        self.lane_detector = lane_detector
+
+        self.segmentation = segmentation
+        self.obstacle_detector = ObstacleDetector(debug_stream=debug_stream)
+
         self.current_speed = 40
-        self.is_turning = 0
         self.h, self.w = 240, 320
         self.debug_stream = debug_stream
-        
+
+        self.current_traffic_sign = 0
+
+        # Turning
+        self.is_turning = False
+        self.turning_time_begin = -1
+        self.current_turning_direction = 1
+        self.sign_count = 0
+
         # Initialize debug stream
         if self.debug_stream:
-            self.debug_stream.create_stream('depth_processing', 'debug/depth_processing')
+            self.debug_stream.create_stream('car_controlling', 'debug/car_controlling')
 
-    def control(self, img, sign, is_go, danger_zone, slow_down):
+        # Subcribe to traffic sign topic
+        rospy.Subscriber("/teamict/trafficsign", Int32, self.new_traffic_sign_callback)
+
+
+    def new_traffic_sign_callback(self, data):
+        traffic_sign = int(data.data)
+        if traffic_sign == 0:
+            self.current_traffic_sign = -1
+        else:
+            self.current_traffic_sign = 1
+
+    def get_next_direction(self):
+        # next_sign = config.sign_map[self.sign_count % len(config.sign_map)]
+        # self.sign_count += 1
+        # return next_sign
+        return self.current_traffic_sign
+
+    def control(self, img):
+        """
+        Calculate steering angle
+        :param img: bgr image to get road mask
+        :return: np.float32 binary image (1-road, 0-other)
+        """
 
         # Find steer angle
-        steer_angle = self.cal_steer_angle(img, sign, danger_zone)
+        steer_angle = self.cal_steer_angle(img)
         speed = 0
 
         if not rospy.is_shutdown():
 
-            if self.current_speed >= self.param.min_speed:
-                speed = max(self.param.min_speed,
-                            self.current_speed - self.param.speed_decay * (self.param.base_speed - self.param.min_speed) * abs(steer_angle ** 2) / (self.param.max_steer_angle ** 2))
+            if self.current_speed >= config.MIN_SPEED:
+                speed = max(config.MIN_SPEED,
+                            self.current_speed - config.SPEED_DECAY * (config.BASE_SPEED - config.MIN_SPEED) * abs(steer_angle ** 2) / (config.MAX_STEER_ANGLE ** 2))
 
-                if self.current_speed < self.param.base_speed and slow_down == 0:
+                if self.current_speed < config.BASE_SPEED and slow_down == 0:
                     self.current_speed += 0.4
 
             self.speed_pub.publish(speed)
-            if is_go:
-                self.steer_angle_pub.publish(steer_angle * 0.6)
+            self.steer_angle_pub.publish(steer_angle * 0.6)
 
 
         return self.is_turning, steer_angle, speed
 
-    def cal_steer_angle(self, img, sign, danger_zone):
-
+    def cal_steer_angle(self, img):
+        """
+        Calculate steering angle for car
+        :param img: bgr image
+        :return: steering angle (-60 to 60)
+        """
+        # Init steering angle to 0
         steer_angle = 0
 
+        # Get birdview image
         img_bv = self.bird_view(img)
 
-        road_mask = self.lane_detector.get_road_mask(img)
+        # Run semantic segmentation on RGB image
+        seg_masks = self.segmentation.get_masks(img)
 
-        # cv2.imshow("road_mask", road_mask)
+        # Get road mask
+        road_mask = seg_masks[TrafficObject.ROAD.name]
 
-        interested_row = road_mask[120, :].reshape((-1,))
-        middle_pos = np.mean(np.argwhere(interested_row > 0))
+        # Convert to bird view
+        road_mask_bv = self.bird_view(road_mask)
+
+        # ====== Turning =======
+
+        if self.is_turning:
+            if self.turning_time_begin + config.TURNING_TIME < time.time():
+                self.is_turning = False
+            else:
+                return self.current_turning_direction * config.TURNING_ANGLE
+        else:
+            interested_area = road_mask_bv[80:180, :]
+            lane_area = np.count_nonzero(interested_area)
+
+            if lane_area > 12000:
+                print("Turning")
+                self.is_turning = True
+                self.current_turning_direction = self.get_next_direction()
+                self.turning_time_begin = time.time()
+
+                # Reset traffic sign
+                self.current_traffic_sign = 0
+
+                return self.current_turning_direction * config.TURNING_ANGLE
+                
+        # ====== If not turning, calculate steering angle using middle point =======
+
+
+        # TODO: The method to calculate the middle point and angle now is so simple.
+        # Research for others in the future
+        interested_row = road_mask_bv[road_mask_bv.shape[0] / 3 * 2, :].reshape((-1,))
+        white_pixels = np.argwhere(interested_row > 0)
+
+        if white_pixels.size != 0:
+            middle_pos = np.mean(white_pixels)
+        else:
+            middle_pos = 160
 
         if middle_pos != middle_pos: # is NaN
             middle_pos = 0
 
+
+
+        # ====== Obstacle avoidance =======
+        # Get masks
+        car_mask = seg_masks[TrafficObject.CAR.name]
+        perdestrian_mask = seg_masks[TrafficObject.PERDESTRIAN.name]
+        danger_zone = self.obstacle_detector.find_danger_zone(car_mask, perdestrian_mask)
 
         # Avoid obstacles
         if danger_zone != (0, 0):
@@ -93,18 +174,21 @@ class CarController:
         if middle_pos < -320:
             middle_pos = -320
 
-        cv2.line(img_bv, (int(middle_pos), self.h / 2), (self.w / 2, self.h), (255, 0, 0), 2)
-        # cv2.imshow("Bird view", img_bv[:, :, :])
+
+        if self.debug_stream:
+            half_car_width = config.CAR_WIDTH // 2 
+            cv2.line(img_bv, (int(middle_pos), self.h / 2), (self.w / 2, self.h), (255, 0, 0), 2)
+            cv2.line(img_bv, (int(middle_pos) + half_car_width, self.h / 2), (self.w / 2 + half_car_width, self.h), (255, 0, 255), 3)
+            cv2.line(img_bv, (int(middle_pos) - half_car_width, self.h / 2), (self.w / 2 - half_car_width, self.h), (255, 0, 255), 3)
+            self.debug_stream.update_image('car_controlling', img_bv)
+            
 
         # Distance between MiddlePos and CarPos
         distance_x = middle_pos - self.w / 2
         distance_y = self.h - self.h / 3 * 2
 
-        # print(middle_pos)
-
         # Angle to middle position
         steer_angle = math.atan(float(distance_x) / distance_y) * 180 / math.pi
-        # cv2.waitKey(1)
 
         # QIK MATH
         # steer_angle = ((middle_pos - 160) / 160) * 60

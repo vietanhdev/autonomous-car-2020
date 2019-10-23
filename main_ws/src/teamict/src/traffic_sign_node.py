@@ -1,0 +1,32 @@
+#!/usr/bin/env python
+from __future__ import print_function
+import time
+import config
+import roslib
+import rospy
+from cv_bridge import CvBridge, CvBridgeError
+from sign_detection.sign_detector import SignDetector
+
+
+# Only use CPU
+import os
+os.environ["CUDA_VISIBLE_DEVICES"]="-1"
+
+# Limit GPU usage
+import tensorflow as tf
+for gpu in tf.config.experimental.list_physical_devices('GPU'):
+    exit(1)
+
+if __name__ == '__main__':
+
+    rospy.init_node(config.TEAM_NAME, anonymous=True)
+    cv_bridge = CvBridge()
+
+    image_processor = SignDetector(cv_bridge)
+
+    try:
+        rospy.spin()
+    except KeyboardInterrupt:
+        print("Shutting down")
+
+

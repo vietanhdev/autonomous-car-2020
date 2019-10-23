@@ -14,17 +14,10 @@ import geometry_msgs.msg
 import threading
 from debug_stream import DebugStream 
 from os import path
-from lane_detection.lane_detector import LaneDetector
-from sign_detection.sign_detector import SignDetector
-from depth_processor import DepthProcessor
+from semantic_segmentation.semantic_segmentation import SemanticSegmentation
+from obstacle_detection.depth_processor import DepthProcessor
 from car_controller import CarController
 
-import tensorflow as tf
-
-gpus = tf.config.experimental.list_physical_devices('GPU')
-tf.config.experimental.set_virtual_device_configuration(gpus[0], [tf.config.experimental.VirtualDeviceConfiguration(memory_limit=4096)])
-    
-from Queue import Queue
 
 PACKAGE_PATH = rospkg.RosPack().get_path(config.PACKAGE_NAME)
 DATA_FOLDER = path.join(PACKAGE_PATH, 'data/')
@@ -39,29 +32,21 @@ class ImageProcessor:
         self.cv_bridge = cv_bridge
         self.debug_stream = debug_stream
 
-        self.is_turning = False
-
-        self.is_go = True
-        self.sign = 0
-        self.bbox_obstacles = []
-        self.danger_zone = (0, 0)
-
         if self.debug_stream:
             self.debug_stream.create_stream('rgb', 'debug/rgb')
             self.debug_stream.create_stream('depth', 'debug/depth')
 
         # ================ Initialize controlling models ================ 
 
-        # Lane detection
-        lane_config = path.join(DATA_FOLDER, 'lane_detector.conf.json')
-        lane_model = path.join(DATA_FOLDER, 'lane_detect_UNet.h5')
-        self.lane_detector = LaneDetector(lane_config, lane_model, debug_stream=debug_stream)
+        # Segmentation
+        seg_config = path.join(DATA_FOLDER, 'semantic_seg_UNet.conf.json')
+        self.semantic_segmentation = SemanticSegmentation(seg_config, debug_stream=debug_stream)
 
         # Depth processor
         self.depth_processor = DepthProcessor(debug_stream=debug_stream)
 
         # Car controlling
-        self.car_controller = CarController(self.lane_detector, debug_stream=debug_stream)
+        self.car_controller = CarController(self.semantic_segmentation, debug_stream=debug_stream)
 
         # Setup pub/sub
         # WTF BUG!!! https://answers.ros.org/question/220502/image-subscriber-lag-despite-queue-1/
@@ -100,9 +85,7 @@ class ImageProcessor:
             # NOTE: image_np.shape = (240, 320, 3)
             image_np = cv2.resize(image_np, (320, 240))
 
-
-            self.slow_down = True
-            self.is_turning, steer_angle, speed = self.car_controller.control(image_np, self.sign, self.is_go, self.danger_zone, self.slow_down)
+            self.car_controller.control(image_np)
 
             if self.debug_stream:
                 self.debug_stream.update_image('rgb', image_np)
