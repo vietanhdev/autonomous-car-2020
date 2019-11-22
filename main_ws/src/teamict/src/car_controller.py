@@ -50,9 +50,6 @@ class CarController:
             self.current_traffic_sign = 1
 
     def get_next_direction(self):
-        # next_sign = config.sign_map[self.sign_count % len(config.sign_map)]
-        # self.sign_count += 1
-        # return next_sign
         return self.current_traffic_sign
 
     def control(self, img):
@@ -149,30 +146,30 @@ class CarController:
         danger_zone = self.obstacle_detector.find_danger_zone(car_mask, perdestrian_mask)
 
         # Avoid obstacles
-        if danger_zone != (0, 0):
+        # if danger_zone != (0, 0):
 
-            # 2 objects
-            if danger_zone[0] == -1:
-                middle_pos = danger_zone[1]
+        #     # 2 objects
+        #     if danger_zone[0] == -1:
+        #         middle_pos = danger_zone[1]
 
-            # single object
-            else:
-                center_danger_zone = int((danger_zone[0] + danger_zone[1]) / 2)
-                # print(danger_zone, center_danger_zone)
-                if danger_zone[0] + 20 < middle_pos < danger_zone[1] - 20:
-                    # obstacle's on the right
-                    if (middle_pos - 160) * 1 + 160 < center_danger_zone:
-                        print("on the right")
-                        middle_pos = danger_zone[0]
-                    # left
-                    else:
-                        print("on the left")
-                        middle_pos = danger_zone[1]
+        #     # single object
+        #     else:
+        #         center_danger_zone = int((danger_zone[0] + danger_zone[1]) / 2)
+        #         # print(danger_zone, center_danger_zone)
+        #         if danger_zone[0] + 20 < middle_pos < danger_zone[1] - 20:
+        #             # obstacle's on the right
+        #             if (middle_pos - 160) * 1 + 160 < center_danger_zone:
+        #                 print("on the right")
+        #                 middle_pos = danger_zone[0]
+        #             # left
+        #             else:
+        #                 print("on the left")
+        #                 middle_pos = danger_zone[1]
 
-        if middle_pos > 640:
-            middle_pos = 640
-        if middle_pos < -320:
-            middle_pos = -320
+        # if middle_pos > 640:
+        #     middle_pos = 640
+        # if middle_pos < -320:
+        #     middle_pos = -320
 
 
         if self.debug_stream:

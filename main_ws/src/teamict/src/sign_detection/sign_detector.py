@@ -19,6 +19,8 @@ from os import path
 sys.path.append(path.join(path.dirname(__file__), '..'))
 import config as gconfig
 
+
+
 class SignDetector:
 
     def __init__(self, cv_bridge):
