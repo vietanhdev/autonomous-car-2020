@@ -94,6 +94,31 @@ class CarController:
         # Get road mask
         road_mask = seg_masks[TrafficObject.ROAD.name]
 
+        # Filter to get only largest white area in road mask
+        if cv2.getVersionMajor() in [2, 4]:
+            # OpenCV 2, OpenCV 4 case
+            contours, hierarchy = cv2.findContours(road_mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        else:
+            # OpenCV 3 case
+            _, contours, hierarchy = cv2.findContours(road_mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+
+        # Choose largest contour
+        best = -1
+        maxsize = -1
+        count = 0
+        for cnt in contours:
+            if cv2.contourArea(cnt) > maxsize :
+                maxsize = cv2.contourArea(cnt)
+                best = count
+            count = count + 1
+
+        road_mask[:, :] = 0
+        if best != -1:
+            cv2.drawContours(road_mask,[contours[best]], 0, 255, -1)
+
+        cv2.imshow("Debug", road_mask)
+        cv2.waitKey(1)
+
         # Convert to bird view
         road_mask_bv = self.bird_view(road_mask)
 
