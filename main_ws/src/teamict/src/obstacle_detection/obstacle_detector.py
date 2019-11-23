@@ -44,6 +44,7 @@ class ObstacleDetector:
     def regress_danger_zone(self, obstacle_left, obstacle_right):
         # danger zone
         danger_zone = (0, 0)  # init
+        y = 0
         # 2 objects
         if obstacle_left != 0 and obstacle_right != 0:
             (x_left, y_left, w_left, h_left) = obstacle_left
@@ -52,8 +53,10 @@ class ObstacleDetector:
             # remove the further one if not parallel
             if (y_left + h_left) - (y_right + h_right) > 50:
                 obstacle_right = 0
+                y = y_left
             elif (y_right + h_right) - (y_left + h_left) > 50:
                 obstacle_left = 0
+                y = y_right
 
             # go through between them
             else:
@@ -78,7 +81,7 @@ class ObstacleDetector:
                 danger_zone = (x - self.area_100, x + w + self.area_100)
             else:
                 danger_zone = (x - self.area_130, x + w + self.area_130)
-        return danger_zone
+        return danger_zone, y
 
     def find_danger_zone(self, car_mask, perdestrian_mask, min_width=20, min_height=20):
 

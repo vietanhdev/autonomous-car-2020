@@ -31,8 +31,12 @@ class CarController:
         # Turning
         self.is_turning = False
         self.turning_time_begin = -1
-        self.current_turning_direction = 1
+        self.current_turning_direction = 0
         self.sign_count = 0
+
+        # Object avoidance
+        self.object_avoidance_direction = 0
+        self.last_object_time = 0
 
         # Initialize debug stream
         if self.debug_stream:
@@ -43,14 +47,8 @@ class CarController:
 
 
     def new_traffic_sign_callback(self, data):
-        traffic_sign = int(data.data)
-        if traffic_sign == 0:
-            self.current_traffic_sign = -1
-        else:
-            self.current_traffic_sign = 1
-
-    def get_next_direction(self):
-        return self.current_traffic_sign
+        self.current_traffic_sign = int(data.data)
+        print("Traffic sign (0:NO, -1:LEFT, 1:RIGHT): {}".format(self.current_traffic_sign))
 
     def control(self, img):
         """
@@ -113,8 +111,10 @@ class CarController:
             if lane_area > 12000:
                 print("Turning")
                 self.is_turning = True
-                self.current_turning_direction = self.get_next_direction()
                 self.turning_time_begin = time.time()
+
+                self.current_turning_direction = self.current_traffic_sign
+                print(self.current_turning_direction)
 
                 # Reset traffic sign
                 self.current_traffic_sign = 0
@@ -143,33 +143,66 @@ class CarController:
         # Get masks
         car_mask = seg_masks[TrafficObject.CAR.name]
         perdestrian_mask = seg_masks[TrafficObject.PERDESTRIAN.name]
-        danger_zone = self.obstacle_detector.find_danger_zone(car_mask, perdestrian_mask)
+        danger_zone, danger_zone_y = self.obstacle_detector.find_danger_zone(car_mask, perdestrian_mask)
+
+        print(danger_zone, danger_zone_y)
 
         # Avoid obstacles
-        # if danger_zone != (0, 0):
+        if danger_zone != (0, 0):
 
-        #     # 2 objects
-        #     if danger_zone[0] == -1:
-        #         middle_pos = danger_zone[1]
+            # 2 objects
+            if danger_zone[0] == -1:
+                self.object_avoidance_direction = 0
+                # middle_pos = danger_zone[1]
 
-        #     # single object
-        #     else:
-        #         center_danger_zone = int((danger_zone[0] + danger_zone[1]) / 2)
-        #         # print(danger_zone, center_danger_zone)
-        #         if danger_zone[0] + 20 < middle_pos < danger_zone[1] - 20:
-        #             # obstacle's on the right
-        #             if (middle_pos - 160) * 1 + 160 < center_danger_zone:
-        #                 print("on the right")
-        #                 middle_pos = danger_zone[0]
-        #             # left
-        #             else:
-        #                 print("on the left")
-        #                 middle_pos = danger_zone[1]
+            # single object
+            else:
+                center_danger_zone = int((danger_zone[0] + danger_zone[1]) / 2)
+                
+                count_road_pixels_left = np.count_nonzero(road_mask[danger_zone_y, :center_danger_zone])
+                count_road_pixels_right = np.count_nonzero(road_mask[danger_zone_y, center_danger_zone:])
+
+                # obstacle's on the right
+                if count_road_pixels_left > count_road_pixels_right:
+                    print("on the right")
+                    self.object_avoidance_direction = -1
+                    self.last_object_time = time.time()
+                    # middle_pos = danger_zone[0]
+                # left
+                else:
+                    print("on the left")
+                    self.object_avoidance_direction = 1
+                    self.last_object_time = time.time()
+                    # middle_pos = danger_zone[1]
+
+
+                # # print(danger_zone, center_danger_zone)
+                # if danger_zone[0] + 20 < middle_pos < danger_zone[1] - 20:
+                #     # obstacle's on the right
+                #     if (middle_pos - 160) * 1 + 160 < center_danger_zone:
+                #         print("on the right")
+                #         self.object_avoidance_direction = -1
+                #         self.last_object_time = time.time()
+                #         # middle_pos = danger_zone[0]
+                #     # left
+                #     else:
+                #         print("on the left")
+                #         self.object_avoidance_direction = -1
+                #         self.last_object_time = time.time()
+                #         # middle_pos = danger_zone[1]
 
         # if middle_pos > 640:
         #     middle_pos = 640
         # if middle_pos < -320:
         #     middle_pos = -320
+
+        # Object avoidance in 5 seconds
+        if self.last_object_time > time.time() - 3:
+            middle_pos += 15 * self.object_avoidance_direction
+            print("Obstacle avoidance direction: " + str(self.object_avoidance_direction))
+        elif self.last_object_time < time.time() - 5:
+            print("Obstacle was over")
+
 
 
         if self.debug_stream:

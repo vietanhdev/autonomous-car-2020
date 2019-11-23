@@ -5,17 +5,15 @@ import config
 import roslib
 import rospy
 from cv_bridge import CvBridge, CvBridgeError
-from sign_detection.sign_detector import SignDetector
+
+from os import sys, path
+sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
+from src.sign_detection_faceboxes.sign_detector import SignDetector
 
 
 # Only use CPU
 import os
 os.environ["CUDA_VISIBLE_DEVICES"]="-1"
-
-# Limit GPU usage
-import tensorflow as tf
-for gpu in tf.config.experimental.list_physical_devices('GPU'):
-    exit(1)
 
 # Limit GPU usage
 import tensorflow as tf
