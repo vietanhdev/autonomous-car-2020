@@ -1,9 +1,10 @@
 {
     "model" : {
         "model_file": "UNET_4classes_66ep.h5",
-        "model_type":			"UNet",
-            "im_width":                     320,
-            "im_height":                    240
+        "backend":			"UNET",
+        "nclasses":         4,
+        "im_width":                     320,
+        "im_height":                    240
     },
     "segmentation_thresh": {
         "OTHER": 1,

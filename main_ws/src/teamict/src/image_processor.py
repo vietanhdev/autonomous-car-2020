@@ -39,7 +39,7 @@ class ImageProcessor:
         # ================ Initialize controlling models ================ 
 
         # Segmentation
-        seg_config = path.join(DATA_FOLDER, 'semantic_seg_UNet.conf.json')
+        seg_config = path.join(DATA_FOLDER, 'semantic_seg_ENet.conf.json')
         self.semantic_segmentation = SemanticSegmentation(seg_config, debug_stream=debug_stream)
 
         # Depth processor

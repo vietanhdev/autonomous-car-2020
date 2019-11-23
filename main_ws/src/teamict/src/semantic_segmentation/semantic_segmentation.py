@@ -19,6 +19,7 @@ import sys
 from os import path
 sys.path.append(path.join(path.dirname(__file__), '..'))
 import config as gconfig
+from .src.frontend import Segment
 
 class SemanticSegmentation():
 
@@ -35,8 +36,16 @@ class SemanticSegmentation():
         self.config = gconfig.SEMANTIC_SEGMENTATION_CONFIG
         self.input_size = (self.config["model"]["im_width"], self.config["model"]["im_height"])
 
+        # define the model and train
+        segment = Segment(self.config["model"]["backend"], self.input_size, self.config["model"]["nclasses"])
+    
+        self.model = segment.feature_extractor
+
+        # Load best model
+        self.model.load_weights(path.join(gconfig.DATA_FOLDER, self.config["model"]["model_file"]))
+
         # Load model
-        self.model = tf.keras.models.load_model(path.join(gconfig.DATA_FOLDER, self.config["model"]["model_file"]))
+        # self.model = tf.keras.models.load_model(path.join(gconfig.DATA_FOLDER, self.config["model"]["model_file"]))
 
         # Initialize debug stream
         if self.debug_stream:

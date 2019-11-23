@@ -1,0 +1,15 @@
+{
+    "model" : {
+        "model_file": "ENET_4Classes_80ep.h5",
+        "backend":			"ENET",
+        "nclasses":         4,
+        "im_width":                     320,
+        "im_height":                    240
+    },
+    "segmentation_thresh": {
+        "OTHER": 1,
+        "ROAD": 0.2,
+        "CAR": 0.2,
+        "PERDESTRIAN": 0.2
+    }
+}
