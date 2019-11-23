@@ -67,7 +67,7 @@ class CarController:
                 speed = max(config.MIN_SPEED,
                             self.current_speed - config.SPEED_DECAY * (config.BASE_SPEED - config.MIN_SPEED) * abs(steer_angle ** 2) / (config.MAX_STEER_ANGLE ** 2))
 
-                if self.current_speed < config.BASE_SPEED and slow_down == 0:
+                if self.current_speed < config.BASE_SPEED:
                     self.current_speed += 0.4
 
             self.speed_pub.publish(speed)
@@ -201,33 +201,12 @@ class CarController:
                     # middle_pos = danger_zone[1]
 
 
-                # # print(danger_zone, center_danger_zone)
-                # if danger_zone[0] + 20 < middle_pos < danger_zone[1] - 20:
-                #     # obstacle's on the right
-                #     if (middle_pos - 160) * 1 + 160 < center_danger_zone:
-                #         print("on the right")
-                #         self.object_avoidance_direction = -1
-                #         self.last_object_time = time.time()
-                #         # middle_pos = danger_zone[0]
-                #     # left
-                #     else:
-                #         print("on the left")
-                #         self.object_avoidance_direction = -1
-                #         self.last_object_time = time.time()
-                #         # middle_pos = danger_zone[1]
-
-        # if middle_pos > 640:
-        #     middle_pos = 640
-        # if middle_pos < -320:
-        #     middle_pos = -320
-
         # Object avoidance in 5 seconds
-        if self.last_object_time > time.time() - 3:
-            middle_pos += 15 * self.object_avoidance_direction
+        if self.last_object_time > time.time() - 4:
+            middle_pos += 10 * self.object_avoidance_direction
             print("Obstacle avoidance direction: " + str(self.object_avoidance_direction))
-        elif self.last_object_time < time.time() - 5:
+        elif self.last_object_time < time.time() - 6:
             print("Obstacle was over")
-
 
 
         if self.debug_stream:
@@ -243,7 +222,7 @@ class CarController:
         distance_y = self.h - self.h / 3 * 2
 
         # Angle to middle position
-        steer_angle = math.atan(float(distance_x) / distance_y) * 180 / math.pi
+        steer_angle = math.atan(float(distance_x) / distance_y) * 180 / math.pi * 1.2
 
         # QIK MATH
         # steer_angle = ((middle_pos - 160) / 160) * 60

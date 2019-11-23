@@ -107,7 +107,7 @@ class SignDetector:
 
 
         # ======= Notify no traffic sign when traffic sign timeout =======
-        if self.last_traffic_sign_time + 10 < time.time() and self.last_traffic_sign_time + 100 > time.time():
+        if self.last_traffic_sign_time + 5 < time.time() and self.last_traffic_sign_time + 20 > time.time():
             self.last_traffic_sign_time = time.time()
             self.trafficsign_pub.publish(Int32(0))
 

@@ -59,5 +59,5 @@ SPEED_SLOW_DOWN = 1
 SIGN_MAP = [-1, -1, 0, 1, 1, 0]
 
 # Turning time
-TURNING_TIME = 1.5
+TURNING_TIME = 1
 TURNING_ANGLE = 40
