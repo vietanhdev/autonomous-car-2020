@@ -52,7 +52,7 @@ class SignDetector:
 
         self.trafficsign_pub = rospy.Publisher('/teamict/trafficsign', Int32, queue_size=3)
 
-        self.traffic_sign_queue = deque(maxlen=8) # Traffic sign will be stored as (<sign>, <time>)
+        self.traffic_sign_queue = deque(maxlen=gconfig.SIGN_HISTORY_LENGTH) # Traffic sign will be stored as (<sign>, <time>)
 
     def callback_depth_image(self, data):
         '''
