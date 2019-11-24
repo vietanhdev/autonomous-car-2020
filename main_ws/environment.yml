@@ -46,6 +46,7 @@ dependencies:
     - python-dateutil==2.8.0
     - pyyaml==5.1.2
     - rospkg==1.1.10
+    - simple-pid==0.2.4
     - six==1.12.0
     - tensorboard==2.0.0
     - tensorflow-estimator==2.0.1
