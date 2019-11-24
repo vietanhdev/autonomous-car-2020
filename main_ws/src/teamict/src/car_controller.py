@@ -48,7 +48,14 @@ class CarController:
 
     def new_traffic_sign_callback(self, data):
         self.current_traffic_sign = int(data.data)
-        print("Traffic sign (0:NO, -1:LEFT, 1:RIGHT): {}".format(self.current_traffic_sign))
+
+        if self.current_traffic_sign == config.SIGN_NO_SIGN:
+            sign = "NO SIGN"
+        elif self.current_traffic_sign == config.SIGN_LEFT:
+            sign = "LEFT"
+        else:
+            sign = "RIGHT"
+        print("Traffic sign detected: {}".format(sign))
 
     def control(self, img):
         """
@@ -133,7 +140,7 @@ class CarController:
             interested_area = road_mask_bv[80:180, :]
             lane_area = np.count_nonzero(interested_area)
 
-            if lane_area > 12000:
+            if lane_area > config.ROAD_AREA_TO_TURN:
                 print("Turning")
                 self.is_turning = True
                 self.turning_time_begin = time.time()
@@ -201,11 +208,11 @@ class CarController:
                     # middle_pos = danger_zone[1]
 
 
-        # Object avoidance in 5 seconds
-        if self.last_object_time > time.time() - 4:
+        # Object avoidance
+        if self.last_object_time > time.time() - 3:
             middle_pos += 10 * self.object_avoidance_direction
             print("Obstacle avoidance direction: " + str(self.object_avoidance_direction))
-        elif self.last_object_time < time.time() - 6:
+        elif self.last_object_time < time.time() - 4:
             print("Obstacle was over")
 
 

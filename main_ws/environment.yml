@@ -25,6 +25,7 @@ dependencies:
     - backports-weakref==1.0.post1
     - catkin-pkg==0.4.14
     - docutils==0.15.2
+    - easydict==1.9
     - enum34==1.1.6
     - funcsigs==1.0.2
     - functools32==3.2.3.post2
@@ -50,7 +51,7 @@ dependencies:
     - tensorflow-estimator==2.0.1
     - tensorflow-gpu==2.0.0
     - termcolor==1.1.0
+    - tqdm==4.39.0
     - werkzeug==0.16.0
     - wrapt==1.11.2
-prefix: /home/ironman/miniconda3/envs/cds
 

@@ -2,7 +2,6 @@
 from __future__ import print_function
 import numpy as np
 import time
-import config
 import roslib
 import rospy
 import rospkg
@@ -22,6 +21,8 @@ import os
 import cv2
 os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 
+from collections import deque
+
 model_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "model/epoch_1_val_loss0.298565")
 detector = FaceDetector(model_path)
 
@@ -39,7 +40,7 @@ class SignDetector:
 
         self.rate = rospy.Rate(50) 
 
-        self.sign_model = tf.keras.models.load_model(path.join(config.DATA_FOLDER, config.SIGN_DETECTION_CONFIG['model_file']))
+        self.sign_model = tf.keras.models.load_model(path.join(gconfig.DATA_FOLDER, gconfig.SIGN_DETECTION_CONFIG['model_file']))
 
         if gconfig.DEVELOPMENT:
             self.sign_debug_stream_pub = rospy.Publisher("debug/sign_detection", Image, queue_size=1)
@@ -51,7 +52,7 @@ class SignDetector:
 
         self.trafficsign_pub = rospy.Publisher('/teamict/trafficsign', Int32, queue_size=3)
 
-        self.last_traffic_sign_time = 0
+        self.traffic_sign_queue = deque(maxlen=8) # Traffic sign will be stored as (<sign>, <time>)
 
     def callback_depth_image(self, data):
         '''
@@ -86,6 +87,38 @@ class SignDetector:
         except CvBridgeError as e:
             print(e)
 
+    def remove_expired_signs(self):
+        current_time = time.time()
+        while len(self.traffic_sign_queue) > 0:
+            oldest_sign, detected_time = self.traffic_sign_queue[0]
+            if detected_time < current_time - gconfig.SIGN_EXP_TIME: # Remove a sign after 5 seconds
+                self.traffic_sign_queue.popleft()
+            else:
+                break
+
+
+    def get_traffic_sign_filtered(self):
+
+        # Filter all expired traffic sign
+        self.remove_expired_signs()
+
+        # Count
+        n_turn_left = 0
+        n_turn_right = 0
+
+        for i in range(len(self.traffic_sign_queue)):
+            sign, detected_time = self.traffic_sign_queue[i]
+            if sign == gconfig.SIGN_LEFT:
+                n_turn_left += 1
+            else:
+                n_turn_right += 1
+
+        if n_turn_left > n_turn_right and n_turn_left >= gconfig.SIGN_DETECTION_THRESHOLD: # Turn left
+            self.trafficsign_pub.publish(Int32(-1))
+            self.traffic_sign_queue.clear() # Clear queue after conslusion
+        elif n_turn_left < n_turn_right and n_turn_right > gconfig.SIGN_DETECTION_THRESHOLD: # Turn right
+            self.trafficsign_pub.publish(Int32(1))
+            self.traffic_sign_queue.clear() # Clear queue after conslusion
 
 
     def callback_processing_thread(self, depth_image):
@@ -106,12 +139,6 @@ class SignDetector:
             return
 
 
-        # ======= Notify no traffic sign when traffic sign timeout =======
-        if self.last_traffic_sign_time + 5 < time.time() and self.last_traffic_sign_time + 20 > time.time():
-            self.last_traffic_sign_time = time.time()
-            self.trafficsign_pub.publish(Int32(0))
-
-
         # ======= Process depth image =======
         
         draw = image.copy()
@@ -128,21 +155,19 @@ class SignDetector:
                     br_x = bbox[2]
                     br_y = bbox[3]
 
-                    print(bbox)
-
                     if i == 0:
                         sign_label = "RIGHT"
-                        self.trafficsign_pub.publish(Int32(1))
+                        self.traffic_sign_queue.append((gconfig.SIGN_RIGHT, time.time()))
                     else:
                         sign_label = "LEFT"
-                        self.trafficsign_pub.publish(Int32(-1))
+                        self.traffic_sign_queue.append((gconfig.SIGN_LEFT, time.time()))
 
                     if gconfig.DEVELOPMENT:
                         cv2.rectangle(draw, (tl_x, tl_y), (br_x, br_y), (0, 0, 255), 3)
                         draw = cv2.putText(draw, sign_label, (tl_x, tl_y), cv2.FONT_HERSHEY_SIMPLEX ,  
-                            0.5, (0,255,0), 1, cv2.LINE_AA) 
+                            0.5, (0,255,0), 1, cv2.LINE_AA)
 
-                    self.last_traffic_sign_time = time.time()
+        traffic_sign = self.get_traffic_sign_filtered()
         
         if gconfig.DEVELOPMENT:
             self.sign_debug_stream_pub.publish(self.cv_bridge.cv2_to_imgmsg(draw, "bgr8"))

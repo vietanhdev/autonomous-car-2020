@@ -56,8 +56,15 @@ SPEED_SLOW_DOWN = 1
 
 
 # ===== Traffic sign =====
-SIGN_MAP = [-1, -1, 0, 1, 1, 0]
-
 # Turning time
+ROAD_AREA_TO_TURN = 12000
 TURNING_TIME = 1
 TURNING_ANGLE = 40
+
+# Traffic sign detection
+SIGN_NO_SIGN = 0
+SIGN_LEFT = -1
+SIGN_RIGHT = 1
+
+SIGN_EXP_TIME = 5
+SIGN_DETECTION_THRESHOLD = 3 # Number of signs for a conclusion
