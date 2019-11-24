@@ -68,7 +68,9 @@ class SemanticSegmentation():
         :param img: bgr image
         :return: bgr image masked with different colors corresponding to different classes
         """
+
         viz = img.copy()
+
         for tf_object in TrafficObject:
             viz = self.mask_with_color(viz, seg_masks[tf_object.name], OBJECT_COLORS[tf_object.name])
 

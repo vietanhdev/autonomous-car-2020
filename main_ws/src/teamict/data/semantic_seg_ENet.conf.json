@@ -8,8 +8,8 @@
     },
     "segmentation_thresh": {
         "OTHER": 1,
-        "ROAD": 0.2,
-        "CAR": 0.2,
-        "PERDESTRIAN": 0.2
+        "ROAD": 0.5,
+        "CAR": 0.5,
+        "PERDESTRIAN": 0.5
     }
 }

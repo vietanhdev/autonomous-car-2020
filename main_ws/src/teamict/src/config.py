@@ -8,7 +8,8 @@ TEAM_NAME = 'teamict'
 PACKAGE_NAME = 'teamict'
 
 # ===== Development mode of the system. Set it to True for debug streams =====
-DEVELOPMENT = True
+DEVELOPMENT = False
+SHOW_VIS_DEBUG_IMAGE = True # Show debug image for demonstration
 
 # ===== Package & Data folder (for JSON config. and model files) =====
 PACKAGE_PATH = rospkg.RosPack().get_path(PACKAGE_NAME)
@@ -46,6 +47,7 @@ TOPIC_GET_DEPTH_IMAGE = '/{}/camera/depth/compressed'.format(TEAM_NAME)
 CAR_WIDTH = 30 # In pixels
 BASE_SPEED = 18
 MIN_SPEED = 13
+MAX_SPEED = 50
 SPEED_DECAY = 2
 MAX_STEER_ANGLE = 60.0
 
@@ -57,7 +59,7 @@ SPEED_SLOW_DOWN = 1
 
 # ===== Traffic sign =====
 # Turning time
-ROAD_AREA_TO_TURN = 12000
+ROAD_AREA_TO_TURN = 13500
 TURNING_TIME = 1
 TURNING_ANGLE = 40
 
@@ -67,4 +69,4 @@ SIGN_LEFT = -1
 SIGN_RIGHT = 1
 
 SIGN_EXP_TIME = 5
-SIGN_DETECTION_THRESHOLD = 3 # Number of signs for a conclusion
+SIGN_DETECTION_THRESHOLD = 4 # Number of signs for a conclusion

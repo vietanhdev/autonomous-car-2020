@@ -22,7 +22,6 @@ class CarController:
         self.segmentation = segmentation
         self.obstacle_detector = ObstacleDetector(debug_stream=debug_stream)
 
-        self.current_speed = 40
         self.h, self.w = 240, 320
         self.debug_stream = debug_stream
 
@@ -50,11 +49,13 @@ class CarController:
         self.current_traffic_sign = int(data.data)
 
         if self.current_traffic_sign == config.SIGN_NO_SIGN:
-            sign = "NO SIGN"
-        elif self.current_traffic_sign == config.SIGN_LEFT:
+            return
+        
+        if self.current_traffic_sign == config.SIGN_LEFT:
             sign = "LEFT"
         else:
             sign = "RIGHT"
+
         print("Traffic sign detected: {}".format(sign))
 
     def control(self, img):
@@ -64,26 +65,62 @@ class CarController:
         :return: np.float32 binary image (1-road, 0-other)
         """
 
+        vis_img = None
+
         # Find steer angle
-        steer_angle = self.cal_steer_angle(img)
+        steer_angle, vis_img = self.cal_steer_angle(img, vis_img=img)
+
+        steer_angle *= 0.6 # Reduce steering angle to get smooth turning
         speed = 0
 
         if not rospy.is_shutdown():
 
-            if self.current_speed >= config.MIN_SPEED:
-                speed = max(config.MIN_SPEED,
-                            self.current_speed - config.SPEED_DECAY * (config.BASE_SPEED - config.MIN_SPEED) * abs(steer_angle ** 2) / (config.MAX_STEER_ANGLE ** 2))
+            # self.current_speed = max(config.MIN_SPEED,
+            #             self.current_speed - config.SPEED_DECAY * (config.BASE_SPEED - config.MIN_SPEED) * abs(steer_angle ** 2) / (config.MAX_STEER_ANGLE ** 2))
+            self.current_speed = 40
 
-                if self.current_speed < config.BASE_SPEED:
-                    self.current_speed += 0.4
+            if self.current_speed > config.MAX_SPEED:
+                self.current_speed = config.MAX_SPEED
 
-            self.speed_pub.publish(speed)
-            self.steer_angle_pub.publish(steer_angle * 0.6)
+            self.speed_pub.publish(self.current_speed)
+            self.steer_angle_pub.publish(steer_angle)
+
+        if config.SHOW_VIS_DEBUG_IMAGE:
+
+            # Draw angle
+            half_car_width = config.CAR_WIDTH // 2 
+            cv2.arrowedLine(vis_img, (self.w // 2, self.h - 30), (self.w // 2 + int(steer_angle * 4), self.h * 2 // 3),  (0, 255, 0), 3)
+
+            # Draw speed
+            vis_img = cv2.putText(vis_img, str(int(self.current_speed)) + " km/h", (self.w // 2 - 40, self.h - 15), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2, cv2.LINE_AA)
+
+            # Draw traffic sign
+            if self.current_traffic_sign != config.SIGN_NO_SIGN:
+                if self.current_traffic_sign == config.SIGN_LEFT:
+                    sign = "<="
+                else:
+                    sign = "=>"
+                vis_img = cv2.circle(vis_img, (self.w - 30, self.h - 30), 22, (255,255,255), -1)
+                vis_img = cv2.circle(vis_img, (self.w - 30, self.h - 30), 20, (255,125,0), -1)
+                vis_img = cv2.putText(vis_img, sign, (self.w - 45, self.h - 25), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2, cv2.LINE_AA)
+
+            # Draw danger zone
+            if self.object_avoidance_direction == 1:
+                vis_img = cv2.circle(vis_img, (self.w // 2 - 60, self.h - 30), 12, (255,255,255), -1)
+                vis_img = cv2.circle(vis_img, (self.w // 2 - 60, self.h - 30), 10, (0,255,255), -1)
+                vis_img = cv2.circle(vis_img, (self.w // 2 - 60, self.h - 30), 4, (0,0,255), -1)
+
+            if self.object_avoidance_direction == -1:
+                vis_img = cv2.circle(vis_img, (self.w // 2 + 60, self.h - 30), 12, (255,255,255), -1)
+                vis_img = cv2.circle(vis_img, (self.w // 2 + 60, self.h - 30), 10, (0,255,255), -1)
+                vis_img = cv2.circle(vis_img, (self.w // 2 + 60, self.h - 30), 4, (0,0,255), -1)
+
+            # Draw speed
+            cv2.imshow("vis_img - Team ICT", vis_img)
+            cv2.waitKey(1)
 
 
-        return self.is_turning, steer_angle, speed
-
-    def cal_steer_angle(self, img):
+    def cal_steer_angle(self, img, vis_img=None):
         """
         Calculate steering angle for car
         :param img: bgr image
@@ -97,6 +134,9 @@ class CarController:
 
         # Run semantic segmentation on RGB image
         seg_masks = self.segmentation.get_masks(img)
+
+        if vis_img is not None:
+            vis_img = self.segmentation.get_visualization_img(vis_img, seg_masks)
 
         # Get road mask
         road_mask = seg_masks[TrafficObject.ROAD.name]
@@ -123,8 +163,8 @@ class CarController:
         if best != -1:
             cv2.drawContours(road_mask,[contours[best]], 0, 255, -1)
 
-        cv2.imshow("Debug", road_mask)
-        cv2.waitKey(1)
+        # cv2.imshow("Debug", road_mask)
+        # cv2.waitKey(1)
 
         # Convert to bird view
         road_mask_bv = self.bird_view(road_mask)
@@ -135,7 +175,7 @@ class CarController:
             if self.turning_time_begin + config.TURNING_TIME < time.time():
                 self.is_turning = False
             else:
-                return self.current_turning_direction * config.TURNING_ANGLE
+                return self.current_turning_direction * config.TURNING_ANGLE, vis_img
         else:
             interested_area = road_mask_bv[80:180, :]
             lane_area = np.count_nonzero(interested_area)
@@ -149,9 +189,9 @@ class CarController:
                 print(self.current_turning_direction)
 
                 # Reset traffic sign
-                self.current_traffic_sign = 0
+                self.current_traffic_sign = config.SIGN_NO_SIGN
 
-                return self.current_turning_direction * config.TURNING_ANGLE
+                return self.current_turning_direction * config.TURNING_ANGLE, vis_img
                 
         # ====== If not turning, calculate steering angle using middle point =======
 
@@ -213,6 +253,7 @@ class CarController:
             middle_pos += 10 * self.object_avoidance_direction
             print("Obstacle avoidance direction: " + str(self.object_avoidance_direction))
         elif self.last_object_time < time.time() - 4:
+            self.object_avoidance_direction = 0
             print("Obstacle was over")
 
 
@@ -221,8 +262,7 @@ class CarController:
             cv2.line(img_bv, (int(middle_pos), self.h / 2), (self.w / 2, self.h), (255, 0, 0), 2)
             cv2.line(img_bv, (int(middle_pos) + half_car_width, self.h / 2), (self.w / 2 + half_car_width, self.h), (255, 0, 255), 3)
             cv2.line(img_bv, (int(middle_pos) - half_car_width, self.h / 2), (self.w / 2 - half_car_width, self.h), (255, 0, 255), 3)
-            self.debug_stream.update_image('car_controlling', img_bv)
-            
+            self.debug_stream.update_image('car_controlling', img_bv)  
 
         # Distance between MiddlePos and CarPos
         distance_x = middle_pos - self.w / 2
@@ -234,7 +274,7 @@ class CarController:
         # QIK MATH
         # steer_angle = ((middle_pos - 160) / 160) * 60
 
-        return steer_angle
+        return steer_angle, vis_img
 
     def unwarp(self, img, src, dst):
         h, w = img.shape[:2]

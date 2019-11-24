@@ -91,7 +91,7 @@ class SignDetector:
         current_time = time.time()
         while len(self.traffic_sign_queue) > 0:
             oldest_sign, detected_time = self.traffic_sign_queue[0]
-            if detected_time < current_time - gconfig.SIGN_EXP_TIME: # Remove a sign after 5 seconds
+            if detected_time < current_time - gconfig.SIGN_EXP_TIME: # Remove a expired sign
                 self.traffic_sign_queue.popleft()
             else:
                 break
@@ -100,7 +100,14 @@ class SignDetector:
     def get_traffic_sign_filtered(self):
 
         # Filter all expired traffic sign
+        # NOTE!!! If trafficsign number is reduced from a positive number
+        # to zero, we publish a NO_SIGN signal to reset traffic sign status
+        n_traffic_signs_before_remove_expired = len(self.traffic_sign_queue)
         self.remove_expired_signs()
+        n_traffic_signs_after_remove_expired = len(self.traffic_sign_queue)
+        if n_traffic_signs_before_remove_expired > 0 and n_traffic_signs_after_remove_expired == 0:
+            self.trafficsign_pub.publish(Int32(gconfig.SIGN_NO_SIGN))
+            self.trafficsign_pub.publish(Int32(gconfig.SIGN_NO_SIGN))
 
         # Count
         n_turn_left = 0
@@ -114,12 +121,11 @@ class SignDetector:
                 n_turn_right += 1
 
         if n_turn_left > n_turn_right and n_turn_left >= gconfig.SIGN_DETECTION_THRESHOLD: # Turn left
-            self.trafficsign_pub.publish(Int32(-1))
+            self.trafficsign_pub.publish(Int32(gconfig.SIGN_LEFT))
             self.traffic_sign_queue.clear() # Clear queue after conslusion
         elif n_turn_left < n_turn_right and n_turn_right > gconfig.SIGN_DETECTION_THRESHOLD: # Turn right
-            self.trafficsign_pub.publish(Int32(1))
+            self.trafficsign_pub.publish(Int32(gconfig.SIGN_RIGHT))
             self.traffic_sign_queue.clear() # Clear queue after conslusion
-
 
     def callback_processing_thread(self, depth_image):
         '''
