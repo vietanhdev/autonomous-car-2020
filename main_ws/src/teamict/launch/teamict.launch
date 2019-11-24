@@ -1,4 +1,5 @@
 <launch>
 	<node name="teamict" pkg="teamict" type="teamict_node.py" output="screen" args="_image_transport:=compressed" />
 	<node name="teamict_sign" pkg="teamict" type="traffic_sign_node.py" output="screen" args="_image_transport:=compressed" />
+	<node name="teamict_keep_running" pkg="teamict" type="keep_running_node.py" output="screen" args="_image_transport:=compressed" />
 </launch>
