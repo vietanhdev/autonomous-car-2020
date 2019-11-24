@@ -10,6 +10,7 @@ import config
 import time
 from semantic_segmentation.traffic_objects import TrafficObject, OBJECT_COLORS
 from obstacle_detection.obstacle_detector import ObstacleDetector
+from simple_pid import PID
 
 class CarController:
 
@@ -44,6 +45,9 @@ class CarController:
         # Subcribe to traffic sign topic
         rospy.Subscriber("/teamict/trafficsign", Int32, self.new_traffic_sign_callback)
 
+        # PID controller
+        self.steer_pid = PID(1, 0.1, 0.05, setpoint=0)
+
 
     def new_traffic_sign_callback(self, data):
         self.current_traffic_sign = int(data.data)
@@ -71,16 +75,20 @@ class CarController:
         steer_angle, vis_img = self.cal_steer_angle(img, vis_img=img)
 
         steer_angle *= 0.6 # Reduce steering angle to get smooth turning
-        speed = 0
+
+        steer_angle = self.steer_pid(-steer_angle)
+
+        if abs(steer_angle) > config.MAX_STEER_ANGLE:
+            steer_angle = config.MAX_STEER_ANGLE * abs(steer_angle) / steer_angle
 
         if not rospy.is_shutdown():
-
-            # self.current_speed = max(config.MIN_SPEED,
-            #             self.current_speed - config.SPEED_DECAY * (config.BASE_SPEED - config.MIN_SPEED) * abs(steer_angle ** 2) / (config.MAX_STEER_ANGLE ** 2))
-            self.current_speed = 40
+            self.current_speed = config.MAX_SPEED - 0.8 * abs(steer_angle)
 
             if self.current_speed > config.MAX_SPEED:
                 self.current_speed = config.MAX_SPEED
+
+            if self.current_speed < config.MIN_SPEED:
+                self.current_speed = config.MIN_SPEED
 
             self.speed_pub.publish(self.current_speed)
             self.steer_angle_pub.publish(steer_angle)
@@ -248,7 +256,7 @@ class CarController:
 
         # Object avoidance
         if self.last_object_time > time.time() - 3:
-            middle_pos += 15 * self.object_avoidance_direction
+            middle_pos += 10 * self.object_avoidance_direction
             print("Obstacle avoidance direction: " + str(self.object_avoidance_direction))
         elif self.last_object_time < time.time() - 4:
             self.object_avoidance_direction = 0
