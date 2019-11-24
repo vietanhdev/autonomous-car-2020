@@ -150,7 +150,7 @@ class SignDetector:
         draw = image.copy()
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
-        pred = detector(image, 0.4)
+        pred = detector(image, gconfig.TRAFFIC_SIGN_DETECTION_THRESHOLD)
 
         for i, pred_i in enumerate(pred):
             if pred_i.shape[0] > 0:
