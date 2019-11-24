@@ -217,7 +217,7 @@ class CarController:
         perdestrian_mask = seg_masks[TrafficObject.PERDESTRIAN.name]
         danger_zone, danger_zone_y = self.obstacle_detector.find_danger_zone(car_mask, perdestrian_mask)
 
-        print(danger_zone, danger_zone_y)
+        # print(danger_zone, danger_zone_y)
 
         # Avoid obstacles
         if danger_zone != (0, 0):
@@ -236,13 +236,11 @@ class CarController:
 
                 # obstacle's on the right
                 if count_road_pixels_left > count_road_pixels_right:
-                    print("on the right")
                     self.object_avoidance_direction = -1
                     self.last_object_time = time.time()
                     # middle_pos = danger_zone[0]
                 # left
                 else:
-                    print("on the left")
                     self.object_avoidance_direction = 1
                     self.last_object_time = time.time()
                     # middle_pos = danger_zone[1]
@@ -250,11 +248,11 @@ class CarController:
 
         # Object avoidance
         if self.last_object_time > time.time() - 3:
-            middle_pos += 10 * self.object_avoidance_direction
+            middle_pos += 15 * self.object_avoidance_direction
             print("Obstacle avoidance direction: " + str(self.object_avoidance_direction))
         elif self.last_object_time < time.time() - 4:
             self.object_avoidance_direction = 0
-            print("Obstacle was over")
+            # print("Obstacle was over")
 
 
         if self.debug_stream:
