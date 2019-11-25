@@ -19,7 +19,7 @@ import config as gconfig
 from lib.core.api.face_detector import FaceDetector
 import os
 import cv2
-os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+# os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 
 from collections import deque
 
@@ -35,9 +35,6 @@ class SignDetector:
 
         self.cv_bridge = cv_bridge
 
-        self.image_mutex = Lock()
-        self.image = None
-
         self.rate = rospy.Rate(50) 
 
         self.sign_model = tf.keras.models.load_model(path.join(gconfig.DATA_FOLDER, gconfig.SIGN_DETECTION_CONFIG['model_file']))
@@ -47,30 +44,11 @@ class SignDetector:
 
         # Setup pub/sub
         # WTF BUG!!! https://answers.ros.org/question/220502/image-subscriber-lag-despite-queue-1/
-        self.rgb_camera_sub = rospy.Subscriber(gconfig.TOPIC_GET_IMAGE, CompressedImage, callback=self.callback_rgb_image, queue_size=1, buff_size=2**24)
+        # self.rgb_camera_sub = rospy.Subscriber(gconfig.TOPIC_GET_IMAGE, CompressedImage, callback=self.callback_rgb_image, queue_size=1, buff_size=2**24)
 
         self.trafficsign_pub = rospy.Publisher('/teamict/trafficsign', Int32, queue_size=3)
 
         self.traffic_sign_queue = deque(maxlen=gconfig.SIGN_HISTORY_LENGTH) # Traffic sign will be stored as (<sign>, <time>)
-
-
-    def callback_rgb_image(self, data):
-        '''
-        Function to process rgb images
-        '''
-        try:
-            np_arr = np.fromstring(data.data, np.uint8)
-            image_np = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
-
-            # NOTE: image_np.shape = (240, 320, 3)
-            image_np = cv2.resize(image_np, (320, 240))
-
-            self.image_mutex.acquire()
-            self.image = image_np.copy()
-            self.image_mutex.release()
-
-        except CvBridgeError as e:
-            print(e)
 
     def remove_expired_signs(self):
         current_time = time.time()
@@ -80,7 +58,6 @@ class SignDetector:
                 self.traffic_sign_queue.popleft()
             else:
                 break
-
 
     def get_traffic_sign_filtered(self):
 
@@ -112,54 +89,50 @@ class SignDetector:
             self.trafficsign_pub.publish(Int32(gconfig.SIGN_RIGHT))
             self.traffic_sign_queue.clear() # Clear queue after conslusion
 
-    def callback_processing_thread(self, depth_image):
+    def processing_thread(self, image_queue):
         '''
         Processing thread
         '''
 
         global detector
 
-        # Local copy
-        image = None
-        self.image_mutex.acquire()
-        if self.image is not None:
-            image = self.image.copy()
-        self.image_mutex.release()
 
-        if image is None:
-            return
+        while True:
 
+            time.sleep(0.06)
 
-        # ======= Process depth image =======
-        
-        draw = image.copy()
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+            image = image_queue.get()
 
-        pred = detector(image, gconfig.TRAFFIC_SIGN_DETECTION_THRESHOLD)
+            # ======= Process depth image =======
+            
+            draw = image.copy()
+            image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
-        for i, pred_i in enumerate(pred):
-            if pred_i.shape[0] > 0:
-                for bbox in pred_i:
+            pred = detector(image, gconfig.TRAFFIC_SIGN_DETECTION_THRESHOLD)
 
-                    tl_x = bbox[0]
-                    tl_y = bbox[1]
-                    br_x = bbox[2]
-                    br_y = bbox[3]
+            for i, pred_i in enumerate(pred):
+                if pred_i.shape[0] > 0:
+                    for bbox in pred_i:
 
-                    if i == 0:
-                        sign_label = "RIGHT"
-                        self.traffic_sign_queue.append((gconfig.SIGN_RIGHT, time.time()))
-                    else:
-                        sign_label = "LEFT"
-                        self.traffic_sign_queue.append((gconfig.SIGN_LEFT, time.time()))
+                        tl_x = bbox[0]
+                        tl_y = bbox[1]
+                        br_x = bbox[2]
+                        br_y = bbox[3]
 
-                    if gconfig.DEVELOPMENT:
-                        cv2.rectangle(draw, (tl_x, tl_y), (br_x, br_y), (0, 0, 255), 3)
-                        draw = cv2.putText(draw, sign_label, (tl_x, tl_y), cv2.FONT_HERSHEY_SIMPLEX ,  
-                            0.5, (0,255,0), 1, cv2.LINE_AA)
+                        if i == 0:
+                            sign_label = "RIGHT"
+                            self.traffic_sign_queue.append((gconfig.SIGN_RIGHT, time.time()))
+                        else:
+                            sign_label = "LEFT"
+                            self.traffic_sign_queue.append((gconfig.SIGN_LEFT, time.time()))
 
-        traffic_sign = self.get_traffic_sign_filtered()
-        
-        if gconfig.DEVELOPMENT:
-            self.sign_debug_stream_pub.publish(self.cv_bridge.cv2_to_imgmsg(draw, "bgr8"))
+                        if gconfig.DEVELOPMENT:
+                            cv2.rectangle(draw, (tl_x, tl_y), (br_x, br_y), (0, 0, 255), 3)
+                            draw = cv2.putText(draw, sign_label, (tl_x, tl_y), cv2.FONT_HERSHEY_SIMPLEX ,  
+                                0.5, (0,255,0), 1, cv2.LINE_AA)
+
+            traffic_sign = self.get_traffic_sign_filtered()
+            
+            if gconfig.DEVELOPMENT:
+                self.sign_debug_stream_pub.publish(self.cv_bridge.cv2_to_imgmsg(draw, "bgr8"))
             

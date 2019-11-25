@@ -27,7 +27,7 @@ with open(SIGN_DETECTION_CONFIG_PATH) as config_buffer:
 
 # ===== ROS Topic names =====
 
-USE_OLD_SIMULATOR = True
+USE_OLD_SIMULATOR = False
 
 # /tênđội/set_speed: Topic được publish từ ROS_node được định nghĩa dưới dạng số thực (Float32). Là tốc độ xe cần đạt. ( Mặc định đang để là /team1/set_speed, nếu nhập tên đội khác, cần sửa lại topic trong code /lane_detect/src/main.cpp theo tên đội đã nhập ở app)
 if USE_OLD_SIMULATOR:
@@ -53,18 +53,18 @@ else:
 # /tênđội/camera/depth/compressed: Topic dùng để subcribe ảnh depth thu được trên xe. Ảnh thu được là ảnh nén theo chuẩn “img”.( Mặc định đang để là /team1/camera/depth/compressed, nếu nhập tên đội khác, cần sửa lại topic trong code /lane_detect/src/carcontrol.cpp theo tên đội đã nhập ở app)
 TOPIC_GET_DEPTH_IMAGE = '/{}/camera/depth/compressed'.format(TEAM_NAME)
 
+IMAGE_QUEUE_SIZE = 3
 
 # ===== Car properties =====
 CAR_WIDTH = 30 # In pixels
-BASE_SPEED = 18
-MIN_SPEED = 13
+MIN_SPEED = 20
 MAX_SPEED = 50
 SPEED_DECAY = 2
 MAX_STEER_ANGLE = 50.0
 
 STEER_ANGLE_SCALE = 1
 
-MIDDLE_POS_OFFSET = 8
+MIDDLE_POS_OFFSET = 0
 MIDDLE_POS_SCALE = 1
 
 SPEED_SLOW_DOWN = 1
@@ -72,7 +72,7 @@ SPEED_SLOW_DOWN = 1
 
 # ===== Traffic sign =====
 # Turning time
-ROAD_AREA_TO_TURN = 13500
+ROAD_AREA_TO_TURN = 12000
 TURNING_TIME = 1
 TURNING_ANGLE = 40
 
@@ -84,4 +84,10 @@ SIGN_RIGHT = 1
 
 SIGN_HISTORY_LENGTH = 10
 SIGN_EXP_TIME = 5
-SIGN_DETECTION_THRESHOLD = 4 # Number of signs for a conclusion
+SIGN_DETECTION_THRESHOLD = 3 # Number of signs for a conclusion
+
+
+# ===== Obstacle avoidance =====
+OBSTACLE_AVOIDANCE_TIME = 3
+OBSTACLE_AVOIDANCE_OFFSET = 15 # Center point offset to avoid obstacle
+OBSTACLE_SPEED_DECAY = 10

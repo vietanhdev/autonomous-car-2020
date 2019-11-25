@@ -46,7 +46,7 @@ class CarController:
         rospy.Subscriber("/teamict/trafficsign", Int32, self.new_traffic_sign_callback)
 
         # PID controller
-        self.steer_pid = PID(1, 0.1, 0.05, setpoint=0)
+        self.steer_pid = PID(1, 0.2, 0.01, setpoint=0)
 
 
     def new_traffic_sign_callback(self, data):
@@ -82,7 +82,7 @@ class CarController:
             steer_angle = config.MAX_STEER_ANGLE * abs(steer_angle) / steer_angle
 
         if not rospy.is_shutdown():
-            self.current_speed = config.MAX_SPEED - 0.8 * abs(steer_angle)
+            self.current_speed = config.MAX_SPEED - 2.5 * abs(steer_angle) - abs(self.object_avoidance_direction) * config.OBSTACLE_SPEED_DECAY
 
             if self.current_speed > config.MAX_SPEED:
                 self.current_speed = config.MAX_SPEED
@@ -255,10 +255,10 @@ class CarController:
 
 
         # Object avoidance
-        if self.last_object_time > time.time() - 3:
-            middle_pos += 10 * self.object_avoidance_direction
+        if self.last_object_time > time.time() - config.OBSTACLE_AVOIDANCE_TIME:
+            middle_pos += config.OBSTACLE_AVOIDANCE_OFFSET * self.object_avoidance_direction
             print("Obstacle avoidance direction: " + str(self.object_avoidance_direction))
-        elif self.last_object_time < time.time() - 4:
+        elif self.last_object_time < time.time() - config.OBSTACLE_AVOIDANCE_TIME - 1:
             self.object_avoidance_direction = 0
             # print("Obstacle was over")
 

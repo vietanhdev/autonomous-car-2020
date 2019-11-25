@@ -13,7 +13,7 @@ from src.sign_detection_faceboxes.sign_detector import SignDetector
 
 # Only use CPU
 import os
-os.environ["CUDA_VISIBLE_DEVICES"]="-1"
+# os.environ["CUDA_VISIBLE_DEVICES"]="-1"
 
 # Limit GPU usage
 import tensorflow as tf
