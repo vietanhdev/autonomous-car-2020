@@ -270,6 +270,10 @@ class CarController:
             cv2.line(img_bv, (int(middle_pos) - half_car_width, self.h / 2), (self.w / 2 - half_car_width, self.h), (255, 0, 255), 3)
             self.debug_stream.update_image('car_controlling', img_bv)  
 
+
+        # Add offset to middle pos
+        middle_pos += config.MIDDLE_POS_OFFSET
+
         # Distance between MiddlePos and CarPos
         distance_x = middle_pos - self.w / 2
         distance_y = self.h - self.h / 3 * 2

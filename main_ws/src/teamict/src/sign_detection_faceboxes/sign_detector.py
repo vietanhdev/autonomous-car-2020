@@ -48,25 +48,10 @@ class SignDetector:
         # Setup pub/sub
         # WTF BUG!!! https://answers.ros.org/question/220502/image-subscriber-lag-despite-queue-1/
         self.rgb_camera_sub = rospy.Subscriber(gconfig.TOPIC_GET_IMAGE, CompressedImage, callback=self.callback_rgb_image, queue_size=1, buff_size=2**24)
-        self.depth_camera_sub = rospy.Subscriber(gconfig.TOPIC_GET_DEPTH_IMAGE, CompressedImage, callback=self.callback_depth_image, queue_size=1, buff_size=2**8)
 
         self.trafficsign_pub = rospy.Publisher('/teamict/trafficsign', Int32, queue_size=3)
 
         self.traffic_sign_queue = deque(maxlen=gconfig.SIGN_HISTORY_LENGTH) # Traffic sign will be stored as (<sign>, <time>)
-
-    def callback_depth_image(self, data):
-        '''
-        Function to process depth images
-        '''
-        try:
-            np_arr = np.fromstring(data.data, np.uint8)
-            image_np = cv2.imdecode(np_arr, cv2.IMREAD_GRAYSCALE)
-            image_np = cv2.resize(image_np, (320, 240))
-
-            self.callback_processing_thread(image_np)
-
-        except CvBridgeError as e:
-            print(e)
 
 
     def callback_rgb_image(self, data):
