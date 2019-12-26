@@ -1,6 +1,6 @@
 {
     "model" : {
-        "model_file": "UNET_4classes_66ep.h5",
+        "model_file": "UNET.199.h5",
         "backend":			"UNET",
         "nclasses":         4,
         "im_width":                     320,

@@ -14,7 +14,7 @@ import numpy as np
 import time
 import rospy
 import rospkg
-from traffic_objects import TrafficObject, OBJECT_COLORS
+from .traffic_objects import TrafficObject, OBJECT_COLORS
 import sys
 from os import path
 sys.path.append(path.join(path.dirname(__file__), '..'))

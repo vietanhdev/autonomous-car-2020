@@ -16,7 +16,7 @@ import sys
 from os import path
 sys.path.append(path.join(path.dirname(__file__), '..'))
 import config as gconfig
-from lib.core.api.face_detector import FaceDetector
+from .lib.core.api.face_detector import FaceDetector
 import os
 import cv2
 # os.environ["CUDA_VISIBLE_DEVICES"] = "-1"

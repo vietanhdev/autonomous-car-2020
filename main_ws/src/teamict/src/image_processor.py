@@ -22,7 +22,7 @@ from os import sys, path
 sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
 from src.sign_detection_faceboxes.sign_detector import SignDetector
 
-import Queue
+from queue import Queue
 from threading import Thread
 
 
