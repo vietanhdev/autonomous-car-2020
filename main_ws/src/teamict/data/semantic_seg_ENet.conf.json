@@ -1,6 +1,6 @@
 {
     "model" : {
-        "model_file": "ENET_4Classes_157ep.h5",
+        "model_file": "ENET_20191227.h5",
         "backend":			"ENET",
         "nclasses":         4,
         "im_width":                     320,

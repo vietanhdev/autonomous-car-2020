@@ -16,7 +16,7 @@ PACKAGE_PATH = rospkg.RosPack().get_path(PACKAGE_NAME)
 DATA_FOLDER = path.join(PACKAGE_PATH, 'data/')
 
 # ===== Read JSON configuration files =====
-SEMANTIC_SEGMENTATION_CONFIG_PATH = path.join(DATA_FOLDER, 'semantic_seg_UNet.conf.json')
+SEMANTIC_SEGMENTATION_CONFIG_PATH = path.join(DATA_FOLDER, 'semantic_seg_ENet.conf.json')
 SIGN_DETECTION_CONFIG_PATH =  path.join(DATA_FOLDER, 'sign_detector.conf.json')
 
 with open(SEMANTIC_SEGMENTATION_CONFIG_PATH) as config_buffer:

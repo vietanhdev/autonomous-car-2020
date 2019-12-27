@@ -44,7 +44,7 @@ class ObstacleDetector:
     def regress_danger_zone(self, obstacle_left, obstacle_right):
         # danger zone
         danger_zone = (0, 0)  # init
-        y = 0
+        danger_zone_y = 0
         # 2 objects
         if obstacle_left != 0 and obstacle_right != 0:
             (x_left, y_left, w_left, h_left) = obstacle_left
@@ -74,6 +74,7 @@ class ObstacleDetector:
                 danger_zone = (x - self.area_100, x + w + self.area_100)
             else:
                 danger_zone = (x - self.area_130, x + w + self.area_130)
+            danger_zone_y = y + h - 1
         if obstacle_right != 0 and obstacle_left == 0:
             (x, y, w, h) = obstacle_right
             center_object = int((x + x + w) / 2)
@@ -81,7 +82,8 @@ class ObstacleDetector:
                 danger_zone = (x - self.area_100, x + w + self.area_100)
             else:
                 danger_zone = (x - self.area_130, x + w + self.area_130)
-        return danger_zone, y
+            danger_zone_y = y + h - 1
+        return danger_zone, danger_zone_y
 
     def find_danger_zone(self, car_mask, perdestrian_mask, min_width=20, min_height=20):
 

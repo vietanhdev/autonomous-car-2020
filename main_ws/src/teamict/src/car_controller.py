@@ -124,8 +124,8 @@ class CarController:
                 vis_img = cv2.circle(vis_img, (self.w // 2 + 60, self.h - 30), 4, (0,0,255), -1)
 
             # Draw speed
-            cv2.imshow("vis_img - Team ICT", vis_img)
-            cv2.waitKey(1)
+            # cv2.imshow("vis_img - Team ICT", vis_img)
+            # cv2.waitKey(1)
 
 
     def cal_steer_angle(self, img, vis_img=None):
@@ -174,6 +174,10 @@ class CarController:
         # cv2.imshow("Debug", road_mask)
         # cv2.waitKey(1)
 
+        car_mask = seg_masks[TrafficObject.CAR.name]
+        perdestrian_mask = seg_masks[TrafficObject.PERDESTRIAN.name]
+        road_mask = road_mask & cv2.bitwise_not(car_mask)
+
         # Convert to bird view
         road_mask_bv = self.bird_view(road_mask)
 
@@ -203,10 +207,9 @@ class CarController:
                 
         # ====== If not turning, calculate steering angle using middle point =======
 
-
         # TODO: The method to calculate the middle point and angle now is so simple.
         # Research for others in the future
-        interested_row = road_mask_bv[road_mask_bv.shape[0] / 3 * 2, :].reshape((-1,))
+        interested_row = road_mask_bv[int(road_mask_bv.shape[0] / 3 * 2), :].reshape((-1,))
         white_pixels = np.argwhere(interested_row > 0)
 
         if white_pixels.size != 0:
@@ -220,9 +223,6 @@ class CarController:
 
 
         # ====== Obstacle avoidance =======
-        # Get masks
-        car_mask = seg_masks[TrafficObject.CAR.name]
-        perdestrian_mask = seg_masks[TrafficObject.PERDESTRIAN.name]
         danger_zone, danger_zone_y = self.obstacle_detector.find_danger_zone(car_mask, perdestrian_mask)
 
         # print(danger_zone, danger_zone_y)
@@ -242,16 +242,18 @@ class CarController:
                 count_road_pixels_left = np.count_nonzero(road_mask[danger_zone_y, :center_danger_zone])
                 count_road_pixels_right = np.count_nonzero(road_mask[danger_zone_y, center_danger_zone:])
 
-                # obstacle's on the right
+                # obstacle is on the right
                 if count_road_pixels_left > count_road_pixels_right:
                     self.object_avoidance_direction = -1
                     self.last_object_time = time.time()
                     # middle_pos = danger_zone[0]
+                    print("OBSTACLE: RIGHT")
                 # left
-                else:
+                elif count_road_pixels_left < count_road_pixels_right:
                     self.object_avoidance_direction = 1
                     self.last_object_time = time.time()
                     # middle_pos = danger_zone[1]
+                    print("OBSTACLE: LEFT")
 
 
         # Object avoidance
@@ -265,9 +267,9 @@ class CarController:
 
         if self.debug_stream:
             half_car_width = config.CAR_WIDTH // 2 
-            cv2.line(img_bv, (int(middle_pos), self.h / 2), (self.w / 2, self.h), (255, 0, 0), 2)
-            cv2.line(img_bv, (int(middle_pos) + half_car_width, self.h / 2), (self.w / 2 + half_car_width, self.h), (255, 0, 255), 3)
-            cv2.line(img_bv, (int(middle_pos) - half_car_width, self.h / 2), (self.w / 2 - half_car_width, self.h), (255, 0, 255), 3)
+            cv2.line(img_bv, (int(middle_pos), self.h // 2), (self.w // 2, self.h), (255, 0, 0), 2)
+            cv2.line(img_bv, (int(middle_pos) + half_car_width, self.h // 2), (self.w // 2 + half_car_width, self.h), (255, 0, 255), 3)
+            cv2.line(img_bv, (int(middle_pos) - half_car_width, self.h // 2), (self.w // 2 - half_car_width, self.h), (255, 0, 255), 3)
             self.debug_stream.update_image('car_controlling', img_bv)  
 
 
