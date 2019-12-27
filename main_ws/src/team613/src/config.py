@@ -4,12 +4,12 @@ import rospkg
 from os import path
 import json
 
-TEAM_NAME = 'teamict'
-PACKAGE_NAME = 'teamict'
+TEAM_NAME = 'team613'
+PACKAGE_NAME = 'team613'
 
 # ===== Development mode of the system. Set it to True for debug streams =====
-DEVELOPMENT = True
-SHOW_VIS_DEBUG_IMAGE = True # Show debug image for demonstration
+DEVELOPMENT = False
+SHOW_VIS_DEBUG_IMAGE = False # Show debug image for demonstration
 
 # ===== Package & Data folder (for JSON config. and model files) =====
 PACKAGE_PATH = rospkg.RosPack().get_path(PACKAGE_NAME)

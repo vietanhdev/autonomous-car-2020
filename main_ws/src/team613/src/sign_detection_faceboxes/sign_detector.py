@@ -46,7 +46,7 @@ class SignDetector:
         # WTF BUG!!! https://answers.ros.org/question/220502/image-subscriber-lag-despite-queue-1/
         # self.rgb_camera_sub = rospy.Subscriber(gconfig.TOPIC_GET_IMAGE, CompressedImage, callback=self.callback_rgb_image, queue_size=1, buff_size=2**24)
 
-        self.trafficsign_pub = rospy.Publisher('/teamict/trafficsign', Int32, queue_size=3)
+        self.trafficsign_pub = rospy.Publisher('/team613/trafficsign', Int32, queue_size=3)
 
         self.traffic_sign_queue = deque(maxlen=gconfig.SIGN_HISTORY_LENGTH) # Traffic sign will be stored as (<sign>, <time>)
 

@@ -43,7 +43,7 @@ class CarController:
             self.debug_stream.create_stream('car_controlling', 'debug/car_controlling')
 
         # Subcribe to traffic sign topic
-        rospy.Subscriber("/teamict/trafficsign", Int32, self.new_traffic_sign_callback)
+        rospy.Subscriber("/team613/trafficsign", Int32, self.new_traffic_sign_callback)
 
         # PID controller
         self.steer_pid = PID(1.5, 0.05, 0.01, setpoint=0)

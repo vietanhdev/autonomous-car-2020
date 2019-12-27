@@ -45,7 +45,7 @@ class SignDetector:
         self.rgb_camera_sub = rospy.Subscriber(gconfig.TOPIC_GET_IMAGE, CompressedImage, callback=self.callback_rgb_image, queue_size=1, buff_size=2**24)
         self.depth_camera_sub = rospy.Subscriber(gconfig.TOPIC_GET_DEPTH_IMAGE, CompressedImage, callback=self.callback_depth_image, queue_size=1, buff_size=2**8)
 
-        self.trafficsign_pub = rospy.Publisher('/teamict/trafficsign', Int32, queue_size=3)
+        self.trafficsign_pub = rospy.Publisher('/team613/trafficsign', Int32, queue_size=3)
     
 
     def callback_depth_image(self, data):

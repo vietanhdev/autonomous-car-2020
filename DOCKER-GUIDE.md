@@ -1,6 +1,6 @@
 # Guide to Docker
 
 ```
-sudo docker build -t teamict .
-sudo docker run --rm -it --network=host -v /mnt/DATA/CUOC_DUA_SO/sources/SuperCar/main_ws/src/teamict:/catkin_ws/src/teamict --name teamict teamict bash
+sudo docker build -t team613 .
+sudo docker run --rm -it --network=host --gpus=all -v /mnt/DATA/CUOC_DUA_SO/sources/SuperCar/main_ws/src/team613:/catkin_ws/src/team613 --name team613 team613 bash
 ```
