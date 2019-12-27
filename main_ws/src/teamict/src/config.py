@@ -89,5 +89,5 @@ SIGN_DETECTION_THRESHOLD = 3 # Number of signs for a conclusion
 
 # ===== Obstacle avoidance =====
 OBSTACLE_AVOIDANCE_TIME = 3
-OBSTACLE_AVOIDANCE_OFFSET = 15 # Center point offset to avoid obstacle
+OBSTACLE_AVOIDANCE_OFFSET = 10 # Center point offset to avoid obstacle
 OBSTACLE_SPEED_DECAY = 10
