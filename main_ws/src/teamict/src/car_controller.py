@@ -46,7 +46,7 @@ class CarController:
         rospy.Subscriber("/teamict/trafficsign", Int32, self.new_traffic_sign_callback)
 
         # PID controller
-        self.steer_pid = PID(1, 0.1, 0.01, setpoint=0)
+        self.steer_pid = PID(1.5, 0.05, 0.01, setpoint=0)
 
 
     def new_traffic_sign_callback(self, data):
