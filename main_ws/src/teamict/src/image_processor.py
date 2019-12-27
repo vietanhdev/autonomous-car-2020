@@ -76,21 +76,35 @@ class ImageProcessor:
         sign_worker.setDaemon(True)
         sign_worker.start()
 
+        connection_worker = Thread(target=self.thread_refresh_connection)
+        connection_worker.setDaemon(True)
+        connection_worker.start()
+        self.last_time_image_received = time.time()
+
 
         # Push init images to force model loading
         image_np = np.zeros([240,320,3],dtype=np.uint8)
         try:
-            self.image_queue.put_nowait(image_np)
-            self.image_queue.put_nowait(image_np)
-            self.image_queue.put_nowait(image_np)
-            self.image_queue.put_nowait(image_np)
-            self.image_queue.put_nowait(image_np)
-            self.image_queue.put_nowait(image_np)
-            self.image_queue.put_nowait(image_np)
-            self.image_queue.put_nowait(image_np)
-            self.image_queue.put_nowait(image_np)
+            for _ in range(10):
+                if self.image_queue.full():
+                    break
+                self.image_queue.put_nowait(image_np)
         except:
             pass
+
+
+    def thread_refresh_connection(self):
+        '''
+        Monitor and restart image topic if we don't receive from image topic for a long time
+        This prevent car freezing when start simulator after start controling node.
+        This idea comes from https://github.com/RobotWebTools/rosbridge_suite/issues/298.
+        '''
+        while True:
+            time.sleep(3)
+            if time.time() - self.last_time_image_received > 3:
+                self.rgb_camera_sub.unregister()
+                # WTF BUG!!! https://answers.ros.org/question/220502/image-subscriber-lag-despite-queue-1/
+                self.rgb_camera_sub = rospy.Subscriber(config.TOPIC_GET_IMAGE, CompressedImage, callback=self.callback_rgb_image, queue_size=1, buff_size=2**24)
 
 
     def thread_car_control(self, image_queue):
@@ -125,6 +139,8 @@ class ImageProcessor:
                     print(e)
 
             # self.car_controller.control(image_np)
+
+            self.last_time_image_received = time.time()
 
             if self.debug_stream:
                 self.debug_stream.update_image('rgb', image_np)
