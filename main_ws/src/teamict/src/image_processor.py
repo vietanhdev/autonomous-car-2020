@@ -77,6 +77,22 @@ class ImageProcessor:
         sign_worker.start()
 
 
+        # Push init images to force model loading
+        image_np = np.zeros([240,320,3],dtype=np.uint8)
+        try:
+            self.image_queue.put_nowait(image_np)
+            self.image_queue.put_nowait(image_np)
+            self.image_queue.put_nowait(image_np)
+            self.image_queue.put_nowait(image_np)
+            self.image_queue.put_nowait(image_np)
+            self.image_queue.put_nowait(image_np)
+            self.image_queue.put_nowait(image_np)
+            self.image_queue.put_nowait(image_np)
+            self.image_queue.put_nowait(image_np)
+        except:
+            pass
+
+
     def thread_car_control(self, image_queue):
         while True:
             img = image_queue.get()
