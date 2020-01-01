@@ -1,11 +1,3 @@
-FROM dungpb/dira_ros:ros-cuda
+FROM dungpb/dira_ros:ros-python2-tensorflow2.0-opencv4.1.2
 
-
-RUN echo "deb http://archive.ubuntu.com/ubuntu bionic main universe" >> /etc/apt/sources.list
-RUN echo "deb http://archive.ubuntu.com/ubuntu bionic-security main universe" >> /etc/apt/sources.list
-RUN echo "deb http://archive.ubuntu.com/ubuntu bionic-updates main universe " >> /etc/apt/sources.list
-RUN apt-get update
-RUN apt-get install -y python-pip
-RUN pip install rospkg
-RUN pip install opencv-python==4.1.2.30 tqdm==4.41.0 simple_pid==0.2.4 easydict==1.9
-RUN pip install tensorflow-gpu==2.0.0b1 
+RUN pip install tqdm==4.41.0 simple_pid==0.2.4 easydict==1.9
