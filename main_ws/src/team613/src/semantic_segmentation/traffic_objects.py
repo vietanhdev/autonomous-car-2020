@@ -3,8 +3,8 @@ from enum import Enum
 class TrafficObject(Enum):
     OTHER = 0
     ROAD = 1
-    CAR = 2
-    PERDESTRIAN = 3
+    CAR = 3
+    PERDESTRIAN = 2
 
 OBJECT_COLORS = {
     "OTHER": (0, 0, 0),

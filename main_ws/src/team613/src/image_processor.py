@@ -46,6 +46,7 @@ class ImageProcessor:
         # ================ Initialize controlling models ================ 
 
         self.image_queue = Queue.Queue(maxsize=config.IMAGE_QUEUE_SIZE)
+        self.depth_image_queue = Queue.Queue(maxsize=config.IMAGE_QUEUE_SIZE)
 
         # Segmentation
         seg_config = path.join(DATA_FOLDER, 'semantic_seg_ENet.conf.json')
@@ -66,9 +67,12 @@ class ImageProcessor:
         # WTF BUG!!! https://answers.ros.org/question/220502/image-subscriber-lag-despite-queue-1/
         self.rgb_camera_sub = rospy.Subscriber(config.TOPIC_GET_IMAGE, CompressedImage, callback=self.callback_rgb_image, queue_size=1, buff_size=2**24)
 
+        if config.USE_DEPTH_CAMERA:
+            self.depth_camera_sub = rospy.Subscriber(config.TOPIC_GET_DEPTH_IMAGE, CompressedImage, callback=self.callback_depth_image, queue_size=1, buff_size=2**24)
+
 
         # Setup workers
-        control_worker = Thread(target=self.thread_car_control, args=(self.image_queue,))
+        control_worker = Thread(target=self.thread_car_control, args=(self.image_queue, self.depth_image_queue))
         control_worker.setDaemon(True)
         control_worker.start()
 
@@ -84,11 +88,16 @@ class ImageProcessor:
 
         # Push init images to force model loading
         image_np = np.zeros([240,320,3],dtype=np.uint8)
+        depth_image_np = np.zeros([240,320],dtype=np.uint8)
         try:
             for _ in range(10):
                 if self.image_queue.full():
                     break
                 self.image_queue.put_nowait(image_np)
+            for _ in range(10):
+                if self.depth_image_queue.full():
+                    break
+                self.depth_image_queue.put_nowait(depth_image_np)
         except:
             pass
 
@@ -106,11 +115,20 @@ class ImageProcessor:
                 # WTF BUG!!! https://answers.ros.org/question/220502/image-subscriber-lag-despite-queue-1/
                 self.rgb_camera_sub = rospy.Subscriber(config.TOPIC_GET_IMAGE, CompressedImage, callback=self.callback_rgb_image, queue_size=1, buff_size=2**24)
 
+                if config.USE_DEPTH_CAMERA:
+                    self.depth_camera_sub.unregister()
+                    self.depth_camera_sub = rospy.Subscriber(config.TOPIC_GET_DEPTH_IMAGE, CompressedImage, callback=self.callback_depth_image, queue_size=1, buff_size=2**24)
 
-    def thread_car_control(self, image_queue):
+
+    def thread_car_control(self, image_queue, depth_image_queue):
         while True:
             img = image_queue.get()
-            self.car_controller.control(img)
+
+            if config.USE_DEPTH_CAMERA:
+                depth_img = depth_image_queue.get()
+                self.car_controller.control(img, depth_img)
+            else:
+                self.car_controller.control(img)
 
 
     def callback_rgb_image(self, data):
@@ -150,15 +168,27 @@ class ImageProcessor:
             print(e)
 
     
-    # def callback_detect_obstacle(self, data):
+    def callback_depth_image(self, data):
 
-    #     try:
-    #         np_arr = np.fromstring(data.data, np.uint8)
-    #         image_np = cv2.imdecode(np_arr, cv2.IMREAD_GRAYSCALE)
-    #         image_np = cv2.resize(image_np, (320, 240))
-    #         image_np = image_np[100:, :]
+        try:
+            np_arr = np.fromstring(data.data, np.uint8)
+            image_np = cv2.imdecode(np_arr, cv2.IMREAD_GRAYSCALE)
+            image_np = cv2.resize(image_np, (320, 240))
     
-    #         self.danger_zone = self.depth_processor.pre_processing_depth_img(image_np)
+            image = self.depth_processor.pre_processing_depth_img(image_np)
 
-    #     except CvBridgeError as e:
-    #         print(e)
+            for _ in range(2):
+
+                if self.depth_image_queue.full():
+                    try:
+                        self.depth_image_queue.get_nowait()
+                    except e:
+                        print(e)
+
+                try:
+                    self.depth_image_queue.put_nowait(image)
+                except e:
+                    print(e)
+
+        except CvBridgeError as e:
+            print(e)

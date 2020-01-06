@@ -88,6 +88,8 @@ SIGN_DETECTION_THRESHOLD = 3 # Number of signs for a conclusion
 
 
 # ===== Obstacle avoidance =====
+USE_DEPTH_CAMERA = True
+USE_CAR_MASK_SEMANTIC_SEG = True
 OBSTACLE_AVOIDANCE_TIME = 3
 OBSTACLE_AVOIDANCE_OFFSET = 10 # Center point offset to avoid obstacle
 OBSTACLE_SPEED_DECAY = 10

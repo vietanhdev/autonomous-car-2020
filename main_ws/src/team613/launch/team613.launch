@@ -3,5 +3,5 @@
 	<!-- This node publish a speed = 0 when not hearing from speed topic for a duration.
 		This trick prevent simulator from not sending image to our control node
 	 -->
-	<node name="team613_keep_running" pkg="team613" type="keep_running_node.py" output="screen" args="_image_transport:=compressed" />
+	<!-- <node name="team613_keep_running" pkg="team613" type="keep_running_node.py" output="screen" args="_image_transport:=compressed" /> -->
 </launch>

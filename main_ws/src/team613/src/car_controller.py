@@ -41,6 +41,7 @@ class CarController:
         # Initialize debug stream
         if self.debug_stream:
             self.debug_stream.create_stream('car_controlling', 'debug/car_controlling')
+            self.debug_stream.create_stream('obstacle_mask', 'debug/obstacle_mask')
 
         # Subcribe to traffic sign topic
         rospy.Subscriber("/team613/trafficsign", Int32, self.new_traffic_sign_callback)
@@ -62,7 +63,7 @@ class CarController:
 
         print("Traffic sign detected: {}".format(sign))
 
-    def control(self, img):
+    def control(self, img, depth_img=None):
         """
         Calculate steering angle
         :param img: bgr image to get road mask
@@ -72,7 +73,7 @@ class CarController:
         vis_img = None
 
         # Find steer angle
-        steer_angle, vis_img = self.cal_steer_angle(img, vis_img=img)
+        steer_angle, vis_img = self.cal_steer_angle(img, vis_img=img, depth_img=depth_img)
 
         steer_angle *= 0.6 # Reduce steering angle to get smooth turning
 
@@ -128,7 +129,7 @@ class CarController:
             # cv2.waitKey(1)
 
 
-    def cal_steer_angle(self, img, vis_img=None):
+    def cal_steer_angle(self, img, vis_img=None, depth_img=None):
         """
         Calculate steering angle for car
         :param img: bgr image
@@ -177,6 +178,17 @@ class CarController:
         car_mask = seg_masks[TrafficObject.CAR.name]
         perdestrian_mask = seg_masks[TrafficObject.PERDESTRIAN.name]
         road_mask = road_mask & cv2.bitwise_not(car_mask)
+
+        # Clear car mask if not use it
+        if not config.USE_CAR_MASK_SEMANTIC_SEG:
+            car_mask[:,:] = 0
+
+        # Use depth image
+        if depth_img is not None:
+            obstacle_mask = depth_img & road_mask
+            car_mask = obstacle_mask | car_mask
+            self.debug_stream.update_image('obstacle_mask', obstacle_mask)
+            
 
         # Convert to bird view
         road_mask_bv = self.bird_view(road_mask)
