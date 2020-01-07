@@ -187,7 +187,9 @@ class CarController:
         if depth_img is not None:
             obstacle_mask = depth_img & road_mask
             car_mask = obstacle_mask | car_mask
-            self.debug_stream.update_image('obstacle_mask', obstacle_mask)
+
+            if self.debug_stream:
+                self.debug_stream.update_image('obstacle_mask', obstacle_mask)
             
 
         # Convert to bird view
