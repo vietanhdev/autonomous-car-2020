@@ -47,7 +47,7 @@ class CarController:
         rospy.Subscriber("/team613/trafficsign", Int32, self.new_traffic_sign_callback)
 
         # PID controller
-        self.steer_pid = PID(1.5, 0.05, 0.01, setpoint=0)
+        self.steer_pid = PID(1.3, 0.05, 0.01, setpoint=0)
 
 
     def new_traffic_sign_callback(self, data):
@@ -205,6 +205,9 @@ class CarController:
         else:
             interested_area = road_mask_bv[80:180, :]
             lane_area = np.count_nonzero(interested_area)
+
+            if config.SHOW_AREA:
+                print("Lane area: {}".format(lane_area))
 
             if lane_area > config.ROAD_AREA_TO_TURN:
                 print("Turning")

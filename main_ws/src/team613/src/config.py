@@ -72,6 +72,7 @@ SPEED_SLOW_DOWN = 1
 
 # ===== Traffic sign =====
 # Turning time
+SHOW_AREA = True
 ROAD_AREA_TO_TURN = 12000
 TURNING_TIME = 1
 TURNING_ANGLE = 40
@@ -88,7 +89,7 @@ SIGN_DETECTION_THRESHOLD = 3 # Number of signs for a conclusion
 
 
 # ===== Obstacle avoidance =====
-USE_DEPTH_CAMERA = True
+USE_DEPTH_CAMERA = False
 USE_CAR_MASK_SEMANTIC_SEG = True
 OBSTACLE_AVOIDANCE_TIME = 3
 OBSTACLE_AVOIDANCE_OFFSET = 10 # Center point offset to avoid obstacle
