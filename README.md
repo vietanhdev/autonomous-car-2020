@@ -1,8 +1,10 @@
 # RaceCar 2019-2020 - Team: ICT K60
 
-## BUGS:
+## Demonstration video
 
-- https://answers.ros.org/question/220502/image-subscriber-lag-despite-queue-1/
+<a href="https://youtu.be/SP6ipnIiAO0" target="_blank">
+    <img src="demo_video.png">
+</a>
 
 ## I. Project Info:
 
@@ -163,3 +165,7 @@ In `video_depth`:
 ```
 ffmpeg -framerate 25 -i left%04d.jpg -c:v libx264 -profile:v high -crf 20 -pix_fmt yuv420p 01_depth.mp4
 ```
+
+## BUGS:
+
+- https://answers.ros.org/question/220502/image-subscriber-lag-despite-queue-1/
