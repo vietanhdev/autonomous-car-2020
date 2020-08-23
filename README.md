@@ -1,5 +1,8 @@
 # RaceCar 2019-2020 - Team: ICT K60
 
+- Repository for road segmentation: <https://github.com/vietanhdev/autonomous-car-2020-road-seg>.
+- Repository for traffic sign detection: <https://github.com/vietanhdev/autonomous-car-2020-sign-detection>.
+
 ## Demonstration video
 
 <a href="https://youtu.be/SP6ipnIiAO0" target="_blank">
@@ -12,13 +15,9 @@
 
 ## II. Environment Setup
 
-### 1. Ubuntu 18.04
-
-### 2. Miniconda or Anaconda
-
-### 3. OpenCV 3.4.3
-
-- You can use following script to install OpenCV 3.4.3: <scripts/install_opencv_3.sh>
+- Ubuntu 18.04
+- Miniconda or Anaconda
+- OpenCV 3.4.3: <scripts/install_opencv_3.sh>
 
 ### 4. Robot Operating System
   
