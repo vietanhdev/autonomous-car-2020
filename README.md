@@ -5,6 +5,7 @@ This is the source code for round 1 - simulation car.
 - Repository for car system: <https://github.com/vietanhdev/autonomous-car-2020>.
 - Repository for road segmentation: <https://github.com/vietanhdev/autonomous-car-2020-road-seg>.
 - Repository for traffic sign detection: <https://github.com/vietanhdev/autonomous-car-2020-sign-detection>.
+- Previous version (2018 - with Watershed, Flood fill and HOG_SVM): https://github.com/vietanhdev/autonomous-car-2018.
 
 ## Demonstration video
 
